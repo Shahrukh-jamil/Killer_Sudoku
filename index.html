@@ -69,7 +69,6 @@
     box-shadow: inset 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.48);
   }
 
-  /* Top Row (y = 0..78u) */
   .panel-top-left {
     left: 0;
     top: 0;
@@ -109,13 +108,8 @@
     z-index: 1;
   }
 
-  .top-link-shadow-left {
-    left: calc((134 - 73 - 11) * var(--u));
-  }
-
-  .top-link-shadow-right {
-    left: calc((893 - 73 - 11) * var(--u));
-  }
+  .top-link-shadow-left { left: calc((134 - 73 - 11) * var(--u)); }
+  .top-link-shadow-right { left: calc((893 - 73 - 11) * var(--u)); }
 
   .top-link-bar {
     position: absolute;
@@ -136,13 +130,8 @@
     z-index: 3;
   }
 
-  .top-link-sq-left {
-    left: calc((134 - 73 - 11) * var(--u));
-  }
-
-  .top-link-sq-right {
-    left: calc((893 - 73 - 11) * var(--u));
-  }
+  .top-link-sq-left { left: calc((134 - 73 - 11) * var(--u)); }
+  .top-link-sq-right { left: calc((893 - 73 - 11) * var(--u)); }
 
   .top-link-bar-white {
     position: absolute;
@@ -163,15 +152,10 @@
     z-index: 5;
   }
 
-  .top-link-core-left {
-    left: calc((141 - 73 - 11) * var(--u));
-  }
+  .top-link-core-left { left: calc((141 - 73 - 11) * var(--u)); }
+  .top-link-core-right { left: calc((900 - 73 - 11) * var(--u)); }
 
-  .top-link-core-right {
-    left: calc((900 - 73 - 11) * var(--u));
-  }
-
-  /* Middle Row Pillars & Center Main Panel (top = 123u, bottom = 122u) */
+  /* Middle Row Pillars & Center Main Panel */
   .panel-mid-left {
     left: 0;
     top: calc(123 * var(--u));
@@ -203,7 +187,6 @@
     overflow: hidden;
   }
 
-  /* Animated Color-Shifting Grid Canvas Confined Strictly to Central Region */
   .central-grid-canvas {
     position: absolute;
     inset: 0;
@@ -214,7 +197,6 @@
     pointer-events: none;
   }
 
-  /* Inner Vignette Shadow Overlay over Central Region */
   .central-vignette {
     position: absolute;
     inset: 0;
@@ -223,7 +205,7 @@
     z-index: 40;
   }
 
-  /* Bottom Row (bottom = 0, height = 78u) */
+  /* Bottom Row */
   .panel-bot-left {
     left: 0;
     bottom: 0;
@@ -253,7 +235,7 @@
   }
 
   /* ==========================================================================
-     MAIN MENU UI (WITH BUTTON SHADOWS, WHITE NODE CIRCLES & CENTRAL GRID)
+     MAIN MENU UI
      ========================================================================== */
   .main-menu {
     position: absolute;
@@ -269,7 +251,6 @@
     pointer-events: none;
   }
 
-  /* SUDOKU Title Box: Outer (216, 229, 648, 215) in 1080u canvas */
   .menu-title-box {
     position: absolute;
     left: calc((216 - 73 - 11) * var(--u));
@@ -293,7 +274,6 @@
     display: block;
   }
 
-  /* Difficulty Boxes: Outer 404 x 134, Inner White 386 x 119, with Drop Shadows */
   .menu-diff-btn {
     position: absolute;
     width: calc(404 * var(--u));
@@ -325,8 +305,6 @@
     display: block;
   }
 
-  /* Updated Centered Positions in 1080u Canvas:
-     EASY: (151, 626), MEDIUM: (503, 796), HARD: (151, 961), EXTREME: (503, 1126) */
   .menu-diff-easy {
     left: calc((151 - 73 - 11) * var(--u));
     top: calc((626 - 123 - 11) * var(--u));
@@ -347,7 +325,34 @@
     top: calc((1126 - 123 - 11) * var(--u));
   }
 
-  /* Connecting Lines */
+  /* Main Menu STATS Button (Centered Below Difficulty Tree) */
+  .menu-stats-btn {
+    position: absolute;
+    left: calc((398 - 73 - 11) * var(--u));
+    top: calc((1308 - 123 - 11) * var(--u));
+    width: calc(284 * var(--u));
+    height: calc(104 * var(--u));
+    background-color: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(6 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, 0.55), 0 0 calc(14 * var(--u)) rgba(0, 0, 0, 0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    color: var(--ink);
+    z-index: 2;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .menu-stats-btn:active {
+    background-color: var(--ink);
+    color: var(--box-bg);
+  }
+
   .menu-line {
     position: absolute;
     background-color: var(--ink);
@@ -355,7 +360,6 @@
     z-index: 1;
   }
 
-  /* Interactive Black Square Nodes (77 x 77) with Drop Shadow & Centered White Circle */
   .menu-node {
     position: absolute;
     width: calc(77 * var(--u));
@@ -456,7 +460,7 @@
   }
 
   /* ==========================================================================
-     IN-GAME VIEW (OVER THE SAME CENTRAL SHIFTING GRID)
+     IN-GAME VIEW
      ========================================================================== */
   .game-view {
     position: absolute;
@@ -837,7 +841,6 @@
     opacity: 0.72;
   }
 
-  /* Centered NEW button below the numbers with medium margin */
   .new-match-btn {
     margin-top: calc(8 * var(--u));
     width: calc(280 * var(--u));
@@ -845,17 +848,17 @@
   }
 
   /* ==========================================================================
-     MODALS
+     MODALS & IN-DEPTH STATS MENU
      ========================================================================== */
   .modal-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.62);
+    background: rgba(0, 0, 0, 0.65);
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 120;
-    padding: calc(40 * var(--u));
+    padding: calc(34 * var(--u));
   }
 
   .modal-overlay.open {
@@ -867,10 +870,10 @@
     border: calc(11 * var(--u)) solid var(--ink);
     box-shadow: inset 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.48), 0 0 calc(28 * var(--u)) rgba(0, 0, 0, 0.55);
     width: 100%;
-    padding: calc(34 * var(--u));
+    padding: calc(28 * var(--u));
     display: flex;
     flex-direction: column;
-    gap: calc(22 * var(--u));
+    gap: calc(18 * var(--u));
   }
 
   .modal-title {
@@ -879,9 +882,9 @@
     border-right: calc(9 * var(--u)) solid var(--ink);
     border-bottom: calc(9 * var(--u)) solid var(--ink);
     border-left: calc(9 * var(--u)) solid var(--ink);
-    padding: calc(16 * var(--u)) calc(24 * var(--u));
+    padding: calc(14 * var(--u)) calc(22 * var(--u));
     font-family: var(--font-ui);
-    font-size: calc(40 * var(--u));
+    font-size: calc(38 * var(--u));
     font-weight: 700;
     letter-spacing: calc(3 * var(--u));
     text-transform: uppercase;
@@ -890,10 +893,83 @@
     align-items: center;
   }
 
+  /* Stats Filter Tabs */
+  .stats-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: calc(10 * var(--u));
+    height: calc(68 * var(--u));
+  }
+
+  .stats-tab-btn {
+    background: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(5 * var(--u)) solid var(--ink);
+    border-right: calc(7 * var(--u)) solid var(--ink);
+    border-bottom: calc(7 * var(--u)) solid var(--ink);
+    border-left: calc(7 * var(--u)) solid var(--ink);
+    font-family: var(--font-ui);
+    font-size: calc(23 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(1 * var(--u));
+    text-transform: uppercase;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stats-tab-btn.active {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
+  /* 12-Metric In-Depth Stats Grid */
+  .stats-grid-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(12 * var(--u));
+  }
+
+  .stats-metric-card {
+    background: var(--box-bg);
+    border-top: calc(5 * var(--u)) solid var(--ink);
+    border-right: calc(7 * var(--u)) solid var(--ink);
+    border-bottom: calc(7 * var(--u)) solid var(--ink);
+    border-left: calc(7 * var(--u)) solid var(--ink);
+    padding: calc(14 * var(--u)) calc(8 * var(--u));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: calc(4 * var(--u));
+  }
+
+  .stats-metric-label {
+    font-family: var(--font-ui);
+    font-size: calc(18 * var(--u));
+    font-weight: 600;
+    color: var(--gray-muted);
+    letter-spacing: calc(1.2 * var(--u));
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .stats-metric-val {
+    font-family: var(--font-ui);
+    font-size: calc(32 * var(--u));
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: calc(1 * var(--u));
+    line-height: 1.05;
+  }
+
   .setting-list {
     display: flex;
     flex-direction: column;
-    gap: calc(14 * var(--u));
+    gap: calc(12 * var(--u));
   }
 
   .setting-row {
@@ -902,7 +978,7 @@
     border-right: calc(8 * var(--u)) solid var(--ink);
     border-bottom: calc(8 * var(--u)) solid var(--ink);
     border-left: calc(8 * var(--u)) solid var(--ink);
-    padding: calc(14 * var(--u)) calc(20 * var(--u));
+    padding: calc(12 * var(--u)) calc(18 * var(--u));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -910,7 +986,7 @@
 
   .setting-row label {
     font-family: var(--font-ui);
-    font-size: calc(30 * var(--u));
+    font-size: calc(28 * var(--u));
     font-weight: 600;
     letter-spacing: calc(1.5 * var(--u));
     text-transform: uppercase;
@@ -921,9 +997,9 @@
     background: var(--box-bg);
     color: var(--ink);
     font-family: var(--font-ui);
-    font-size: calc(26 * var(--u));
+    font-size: calc(24 * var(--u));
     font-weight: 700;
-    padding: calc(6 * var(--u)) calc(22 * var(--u));
+    padding: calc(5 * var(--u)) calc(20 * var(--u));
     cursor: pointer;
   }
 
@@ -952,8 +1028,8 @@
 
   .modal-btn-row {
     display: flex;
-    gap: calc(18 * var(--u));
-    height: calc(92 * var(--u));
+    gap: calc(16 * var(--u));
+    height: calc(86 * var(--u));
   }
 
   .modal-btn-row .action-btn {
@@ -973,9 +1049,6 @@
 
 <canvas id="celebrationCanvas"></canvas>
 
-<!-- ==========================================================================
-     FULL 1080-UNIT 9-PANEL PILLAR/GRID ARCHITECTURAL FRAME & TOP SQUARE LINK
-     ========================================================================== -->
 <div class="screen-canvas">
 
   <!-- Top Row Panels -->
@@ -1001,10 +1074,9 @@
   <div class="grid-panel panel-bot-center"></div>
   <div class="grid-panel panel-bot-right"></div>
 
-  <!-- Center Main Panel (x = 73..1006, y = 123..H-122) -->
+  <!-- Center Main Panel -->
   <div class="app-panel" id="appPanel">
 
-    <!-- Animated Shifting-Color Grid & Random White Squares Confined to Central Region -->
     <canvas class="central-grid-canvas" id="centralGridCanvas"></canvas>
 
     <!-- ======================================================================
@@ -1061,6 +1133,13 @@
           <defs><clipPath id="cpExtreme"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
           <path clip-path="url(#cpExtreme)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
                 d="M 111.58 46.30 L 94.61 46.30 L 94.61 72.70 L 111.58 72.70 M 94.61 59.50 L 109.02 59.50 M 122.58 38.99 L 138.63 80.01 M 138.63 38.99 L 122.58 80.01 M 149.23 46.30 L 171.46 46.30 M 160.35 46.30 L 160.35 77.00 M 182.26 77.00 L 182.26 46.30 L 189.57 46.30 L 189.57 46.30 L 190.36 46.34 L 191.14 46.46 L 191.90 46.66 L 192.63 46.94 L 193.33 47.29 L 193.99 47.71 L 194.59 48.20 L 195.13 48.74 L 195.61 49.34 L 196.02 49.98 L 196.35 50.66 L 196.60 51.38 L 196.77 52.11 L 196.86 52.85 L 196.86 53.61 L 196.77 54.35 L 196.60 55.08 L 196.35 55.80 L 196.02 56.48 L 195.61 57.12 L 195.13 57.72 L 194.59 58.26 L 193.99 58.75 L 193.33 59.17 L 192.63 59.52 L 191.90 59.80 L 191.14 60.00 L 190.36 60.12 L 189.57 60.16 L 182.26 60.16 M 190.30 59.50 L 197.56 80.01 M 229.94 46.30 L 212.97 46.30 L 212.97 72.70 L 229.94 72.70 M 212.97 59.50 L 227.39 59.50 M 241.74 42.00 L 241.74 77.00 M 262.62 42.00 L 262.62 77.00 M 242.77 40.28 L 252.18 66.50 L 261.59 40.28 M 295.69 46.30 L 278.73 46.30 L 278.73 72.70 L 295.69 72.70 M 278.73 59.50 L 293.14 59.50"/>
+        </svg>
+      </button>
+
+      <!-- Main Menu STATS Button -->
+      <button class="menu-stats-btn" id="btnOpenStatsMain" aria-label="STATS">
+        <svg class="menu-diff-svg" viewBox="0 0 266 89" preserveAspectRatio="xMidYMid meet">
+          <text x="133" y="57" text-anchor="middle" fill="currentColor" font-family="'Barlow Condensed', sans-serif" font-weight="700" font-size="44" letter-spacing="4">STATS</text>
         </svg>
       </button>
     </section>
@@ -1129,16 +1208,16 @@
       </div>
     </main>
 
-    <!-- Inner Vignette Shadow Over Central Region Edges -->
     <div class="central-vignette"></div>
 
     <!-- ======================================================================
          MODALS
          ====================================================================== -->
+    <!-- Yes / No Confirmation Modal for New Game -->
     <div class="modal-overlay" id="modalConfirmNew">
       <div class="modal-card">
         <div class="modal-title">
-          <span>NEW GAME?</span>
+          <span id="confirmModalTitle">NEW GAME?</span>
         </div>
         <div class="modal-btn-row">
           <button class="action-btn" id="btnConfirmYes">YES</button>
@@ -1147,6 +1226,77 @@
       </div>
     </div>
 
+    <!-- In-Depth User Statistics Modal -->
+    <div class="modal-overlay" id="modalStats">
+      <div class="modal-card">
+        <div class="modal-title">
+          <span>STATISTICS</span>
+        </div>
+        <div class="stats-tabs" id="statsTabs">
+          <button class="stats-tab-btn active" data-tab="all">ALL</button>
+          <button class="stats-tab-btn" data-tab="easy">EASY</button>
+          <button class="stats-tab-btn" data-tab="medium">MED</button>
+          <button class="stats-tab-btn" data-tab="hard">HARD</button>
+          <button class="stats-tab-btn" data-tab="extreme">EXT</button>
+        </div>
+        <div class="stats-grid-panel">
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">PLAYED</span>
+            <span class="stats-metric-val" id="stPlayed">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">WON</span>
+            <span class="stats-metric-val" id="stWon">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">FAILED</span>
+            <span class="stats-metric-val" id="stFailed">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">WIN RATE</span>
+            <span class="stats-metric-val" id="stWinRate">0%</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">PERFECT</span>
+            <span class="stats-metric-val" id="stPerfect">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">STREAK</span>
+            <span class="stats-metric-val" id="stStreak">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">BEST STREAK</span>
+            <span class="stats-metric-val" id="stBestStreak">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">BEST TIME</span>
+            <span class="stats-metric-val" id="stBestTime">--:--</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">AVG TIME</span>
+            <span class="stats-metric-val" id="stAvgTime">--:--</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">BEST SCORE</span>
+            <span class="stats-metric-val" id="stBestScore">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">AVG SCORE</span>
+            <span class="stats-metric-val" id="stAvgScore">0</span>
+          </div>
+          <div class="stats-metric-card">
+            <span class="stats-metric-label">TOTAL TIME</span>
+            <span class="stats-metric-val" id="stTotalTime">00:00</span>
+          </div>
+        </div>
+        <div class="modal-btn-row">
+          <button class="action-btn" id="btnResetStats">RESET</button>
+          <button class="action-btn modal-close">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
     <div class="modal-overlay" id="modalSettings">
       <div class="modal-card">
         <div class="modal-title">
@@ -1183,23 +1333,26 @@
           </div>
         </div>
         <div class="modal-btn-row">
+          <button class="action-btn" id="btnOpenStatsFromSettings">STATS</button>
           <button class="action-btn modal-close">CLOSE</button>
         </div>
       </div>
     </div>
 
+    <!-- Game Over Modal (No Continue Option) -->
     <div class="modal-overlay" id="modalGameOver">
       <div class="modal-card">
         <div class="modal-title">
           <span>FAILED</span>
         </div>
         <div class="modal-btn-row">
-          <button class="action-btn" id="btnRevive">CONTINUE</button>
+          <button class="action-btn" id="btnFailNew">NEW</button>
           <button class="action-btn" id="btnRestart">MENU</button>
         </div>
       </div>
     </div>
 
+    <!-- Win Modal -->
     <div class="modal-overlay" id="modalWin">
       <div class="modal-card">
         <div class="modal-title">
@@ -1212,6 +1365,7 @@
           <div>SCORE: <strong id="winScore">-</strong></div>
         </div>
         <div class="modal-btn-row">
+          <button class="action-btn" id="btnWinStats">STATS</button>
           <button class="action-btn" id="btnWinNew">MENU</button>
         </div>
       </div>
@@ -1224,14 +1378,13 @@
 <script>
 /* ==========================================================================
    ANIMATED CENTRAL GRID ENGINE (SHIFTING COLORS + RANDOM WHITE CELLS)
-   Confined strictly to the 19-column central panel (#centralGridCanvas)
    ========================================================================== */
 class CentralGridEffect {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.cols = 19;
-    this.cellU = 48; // 19 * 48 = 912u exact inner width
+    this.cellU = 48;
     this.lineU = 6.2;
     this.width = 912;
     this.height = 1780;
@@ -1319,11 +1472,9 @@ class CentralGridEffect {
     ctx.save();
     ctx.scale(s, s);
 
-    // 1. Base matte gray fill (#b4b4b4)
     ctx.fillStyle = '#b4b4b4';
     ctx.fillRect(0, 0, W, H);
 
-    // 2. Random white-filling and unfilling squares
     for (const [key, cell] of this.activeCells.entries()) {
       cell.phase += dt * cell.speed * 1.4;
       if (cell.phase >= Math.PI) {
@@ -1335,7 +1486,6 @@ class CentralGridEffect {
       ctx.fillRect(cell.c * this.cellU, cell.r * this.cellU, this.cellU, this.cellU);
     }
 
-    // 3. Build grid path & clip to grid lines
     ctx.save();
     ctx.beginPath();
     const halfL = this.lineU / 2;
@@ -1349,11 +1499,9 @@ class CentralGridEffect {
     }
     ctx.clip();
 
-    // Base crisp white/ice-light grid color
     ctx.fillStyle = '#eef3fa';
     ctx.fillRect(0, 0, W, H);
 
-    // Drifting shifting color fields along the grid lines
     for (let i = 0; i < this.colorOrbs.length; i++) {
       const orb = this.colorOrbs[i];
       const ox = (0.5 + 0.38 * Math.sin(t * orb.vx * 8 + i * 1.7)) * W;
@@ -1372,6 +1520,139 @@ class CentralGridEffect {
     ctx.restore();
     requestAnimationFrame((nextT) => this.loop(nextT));
   }
+}
+
+/* ==========================================================================
+   IN-DEPTH USER STATISTICS TRACKER
+   ========================================================================== */
+const DIFFICULTIES = ['easy', 'medium', 'hard', 'extreme'];
+let activeStatsTab = 'all';
+
+function createEmptyDiffStats() {
+  return {
+    played: 0,
+    won: 0,
+    failed: 0,
+    perfectWins: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+    bestTime: null,
+    totalWinTime: 0,
+    totalTimePlayed: 0,
+    bestScore: 0,
+    totalScore: 0
+  };
+}
+
+let userStats = {
+  easy: createEmptyDiffStats(),
+  medium: createEmptyDiffStats(),
+  hard: createEmptyDiffStats(),
+  extreme: createEmptyDiffStats()
+};
+
+function loadUserStats() {
+  try {
+    const raw = localStorage.getItem('killer_sudoku_user_stats');
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    for (const d of DIFFICULTIES) {
+      if (parsed && parsed[d]) {
+        userStats[d] = { ...createEmptyDiffStats(), ...parsed[d] };
+      }
+    }
+  } catch(e) {}
+}
+
+function saveUserStats() {
+  try {
+    localStorage.setItem('killer_sudoku_user_stats', JSON.stringify(userStats));
+  } catch(e) {}
+}
+
+function recordGameWin(diff, timeSec, scoreVal, mistakesCount, hintsCount) {
+  const s = userStats[diff] || createEmptyDiffStats();
+  s.played++;
+  s.won++;
+  s.currentStreak++;
+  if (s.currentStreak > s.bestStreak) s.bestStreak = s.currentStreak;
+  if (mistakesCount === 0 && hintsCount === 0) s.perfectWins++;
+  if (s.bestTime === null || timeSec < s.bestTime) s.bestTime = timeSec;
+  s.totalWinTime += timeSec;
+  s.totalTimePlayed += timeSec;
+  if (scoreVal > s.bestScore) s.bestScore = scoreVal;
+  s.totalScore += scoreVal;
+  userStats[diff] = s;
+  saveUserStats();
+}
+
+function recordGameLoss(diff, timeSec) {
+  const s = userStats[diff] || createEmptyDiffStats();
+  s.played++;
+  s.failed++;
+  s.currentStreak = 0;
+  s.totalTimePlayed += timeSec;
+  userStats[diff] = s;
+  saveUserStats();
+}
+
+function formatDuration(sec) {
+  if (sec === null || sec === undefined || isNaN(sec)) return '--:--';
+  const total = Math.max(0, Math.round(sec));
+  const hrs = Math.floor(total / 3600);
+  const mins = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hrs > 0) {
+    return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+function renderStatsModal(tab = activeStatsTab) {
+  activeStatsTab = tab;
+  document.querySelectorAll('#statsTabs .stats-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+
+  let agg;
+  if (tab === 'all') {
+    agg = createEmptyDiffStats();
+    for (const d of DIFFICULTIES) {
+      const s = userStats[d];
+      agg.played += s.played;
+      agg.won += s.won;
+      agg.failed += s.failed;
+      agg.perfectWins += s.perfectWins;
+      agg.currentStreak += s.currentStreak;
+      if (s.bestStreak > agg.bestStreak) agg.bestStreak = s.bestStreak;
+      if (s.bestTime !== null && (agg.bestTime === null || s.bestTime < agg.bestTime)) {
+        agg.bestTime = s.bestTime;
+      }
+      agg.totalWinTime += s.totalWinTime;
+      agg.totalTimePlayed += s.totalTimePlayed;
+      if (s.bestScore > agg.bestScore) agg.bestScore = s.bestScore;
+      agg.totalScore += s.totalScore;
+    }
+  } else {
+    agg = userStats[tab] || createEmptyDiffStats();
+  }
+
+  const winRate = agg.played > 0 ? Math.round((agg.won / agg.played) * 100) : 0;
+  const avgTime = agg.won > 0 ? Math.round(agg.totalWinTime / agg.won) : null;
+  const avgScore = agg.won > 0 ? Math.round(agg.totalScore / agg.won) : 0;
+
+  document.getElementById('stPlayed').textContent = agg.played;
+  document.getElementById('stWon').textContent = agg.won;
+  document.getElementById('stFailed').textContent = agg.failed;
+  document.getElementById('stWinRate').textContent = `${winRate}%`;
+  document.getElementById('stPerfect').textContent = agg.perfectWins;
+  document.getElementById('stStreak').textContent = agg.currentStreak;
+  document.getElementById('stBestStreak').textContent = agg.bestStreak;
+  document.getElementById('stBestTime').textContent = formatDuration(agg.bestTime);
+  document.getElementById('stAvgTime').textContent = formatDuration(avgTime);
+  document.getElementById('stBestScore').textContent = agg.bestScore;
+  document.getElementById('stAvgScore').textContent = avgScore;
+  document.getElementById('stTotalTime').textContent = formatDuration(agg.totalTimePlayed);
 }
 
 /* ==========================================================================
@@ -1458,6 +1739,7 @@ let gameState = {
   cages: [],
   cellToCage: {},
   mistakes: 0,
+  hintsUsed: 0,
   score: 0,
   timerSeconds: 0,
   isPaused: false,
@@ -1478,7 +1760,7 @@ let gameState = {
 };
 
 let timerInterval = null;
-let pendingNewDiff = null;
+let pendingConfirmAction = null;
 const mainMenuEl = document.getElementById('mainMenu');
 const gameViewEl = document.getElementById('gameView');
 const modalConfirmNewEl = document.getElementById('modalConfirmNew');
@@ -1496,8 +1778,9 @@ function hideMainMenu() {
   gameState.isPaused = false;
 }
 
-function promptNewGameConfirmation(diff) {
-  pendingNewDiff = diff;
+function promptConfirmation(titleText, onYesCallback) {
+  document.getElementById('confirmModalTitle').textContent = titleText;
+  pendingConfirmAction = onYesCallback;
   modalConfirmNewEl.classList.add('open');
 }
 
@@ -1796,6 +2079,7 @@ function startNewGame(difficulty = 'easy') {
   gameState.cages = generated.cages;
   gameState.cellToCage = generated.cellToCage;
   gameState.mistakes = 0;
+  gameState.hintsUsed = 0;
   gameState.score = 0;
   gameState.timerSeconds = 0;
   gameState.isPaused = false;
@@ -1872,12 +2156,12 @@ function handleNumberInput(digit) {
       renderCell(key);
       updateNumpad();
       renderHighlights();
-      saveToStorage();
 
       if (gameState.settings.mistakeLimit && gameState.mistakes >= 3) {
         triggerGameOver();
         return;
       }
+      saveToStorage();
       return;
     }
 
@@ -1908,7 +2192,7 @@ function handleNumberInput(digit) {
     updateNumpad();
     renderHighlights();
 
-    checkWinCondition();
+    if (checkWinCondition()) return;
   }
   saveToStorage();
 }
@@ -1963,6 +2247,7 @@ function giveHint() {
   gameState.selectedCell = targetKey;
   gameState.board[targetKey] = correctVal;
   gameState.notes[targetKey].clear();
+  gameState.hintsUsed++;
   gameState.score = Math.max(0, gameState.score - 20);
 
   const affectedNotes = [];
@@ -1990,9 +2275,9 @@ function giveHint() {
   updateStats();
   updateNumpad();
   renderHighlights();
-  saveToStorage();
 
-  checkWinCondition();
+  if (checkWinCondition()) return;
+  saveToStorage();
 }
 
 function undoLastAction() {
@@ -2158,7 +2443,8 @@ function updateNumpad() {
 function startTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
-    if (!gameState.isPaused && !gameState.gameOver && !gameState.won && !modalConfirmNewEl.classList.contains('open')) {
+    const anyModalOpen = document.querySelector('.modal-overlay.open');
+    if (!gameState.isPaused && !gameState.gameOver && !gameState.won && !anyModalOpen) {
       gameState.timerSeconds++;
       updateStats();
       if (gameState.timerSeconds % 10 === 0) saveToStorage();
@@ -2183,6 +2469,9 @@ function checkWinCondition() {
 
   gameState.won = true;
   clearInterval(timerInterval);
+  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  recordGameWin(gameState.difficulty, gameState.timerSeconds, gameState.score, gameState.mistakes, gameState.hintsUsed);
+
   sfx.victory();
   fireConfetti();
 
@@ -2194,13 +2483,14 @@ function checkWinCondition() {
   document.getElementById('winScore').textContent = gameState.score;
 
   document.getElementById('modalWin').classList.add('open');
-  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
   return true;
 }
 
 function triggerGameOver() {
   gameState.gameOver = true;
   clearInterval(timerInterval);
+  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  recordGameLoss(gameState.difficulty, gameState.timerSeconds);
   sfx.error();
   document.getElementById('modalGameOver').classList.add('open');
 }
@@ -2249,7 +2539,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (!mainMenuEl.classList.contains('hidden')) return;
-  if (gameState.isPaused || gameState.gameOver || gameState.won || modalConfirmNewEl.classList.contains('open')) return;
+  if (gameState.isPaused || gameState.gameOver || gameState.won || document.querySelector('.modal-overlay.open')) return;
 
   if (e.key >= '1' && e.key <= '9') {
     handleNumberInput(parseInt(e.key, 10));
@@ -2336,28 +2626,87 @@ document.getElementById('btnMenuTop').addEventListener('pointerdown', (e) => {
   showMainMenu();
 });
 
+/* Open In-Depth Statistics Modal */
+function openStatsMenu(defaultTab = 'all') {
+  renderStatsModal(defaultTab);
+  document.getElementById('modalStats').classList.add('open');
+}
+
+document.getElementById('btnOpenStatsMain').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  openStatsMenu('all');
+});
+
+document.getElementById('btnOpenStatsFromSettings').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  document.getElementById('modalSettings').classList.remove('open');
+  openStatsMenu(gameState.difficulty || 'all');
+});
+
+document.getElementById('btnWinStats').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  document.getElementById('modalWin').classList.remove('open');
+  openStatsMenu(gameState.difficulty || 'all');
+});
+
+document.querySelectorAll('#statsTabs .stats-tab-btn').forEach(btn => {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    sfx.click();
+    renderStatsModal(btn.dataset.tab);
+  });
+});
+
+document.getElementById('btnResetStats').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  promptConfirmation('RESET STATS?', () => {
+    userStats = {
+      easy: createEmptyDiffStats(),
+      medium: createEmptyDiffStats(),
+      hard: createEmptyDiffStats(),
+      extreme: createEmptyDiffStats()
+    };
+    saveUserStats();
+    renderStatsModal(activeStatsTab);
+  });
+});
+
+/* In-Game NEW Button below numbers -> Prompts Yes/No confirmation */
 document.getElementById('btnInGameNew').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   sfx.click();
-  promptNewGameConfirmation(gameState.difficulty);
+  const targetDiff = gameState.difficulty;
+  promptConfirmation('NEW GAME?', () => {
+    startNewGame(targetDiff);
+  });
 });
 
+/* Main Menu Black Square Nodes -> Prompts Yes/No confirmation for associated difficulty */
 document.querySelectorAll('.node-new-pick').forEach(nodeBtn => {
   nodeBtn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     e.stopPropagation();
     sfx.click();
-    promptNewGameConfirmation(nodeBtn.dataset.diff);
+    const targetDiff = nodeBtn.dataset.diff;
+    promptConfirmation('NEW GAME?', () => {
+      startNewGame(targetDiff);
+    });
   });
 });
 
+/* Yes / No Confirmation Popup Handlers */
 document.getElementById('btnConfirmYes').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   sfx.click();
   modalConfirmNewEl.classList.remove('open');
-  if (pendingNewDiff) {
-    startNewGame(pendingNewDiff);
-    pendingNewDiff = null;
+  if (pendingConfirmAction) {
+    const fn = pendingConfirmAction;
+    pendingConfirmAction = null;
+    fn();
   }
 });
 
@@ -2365,17 +2714,18 @@ document.getElementById('btnConfirmNo').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   sfx.click();
   modalConfirmNewEl.classList.remove('open');
-  pendingNewDiff = null;
+  pendingConfirmAction = null;
 });
 
 document.querySelectorAll('.modal-close').forEach(el => {
   el.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     sfx.click();
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    el.closest('.modal-overlay').classList.remove('open');
   });
 });
 
+/* Main Menu Difficulty Buttons -> Continues saved progress for that difficulty (or starts new if none) */
 document.querySelectorAll('.diff-pick').forEach(btn => {
   btn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -2384,25 +2734,24 @@ document.querySelectorAll('.diff-pick').forEach(btn => {
   });
 });
 
-document.getElementById('btnRevive').addEventListener('pointerdown', (e) => {
+/* Failed Modal Handlers (No Continue Option) */
+document.getElementById('btnFailNew').addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  gameState.mistakes = 2;
-  gameState.gameOver = false;
-  startTimer();
-  updateStats();
-  saveToStorage();
+  sfx.click();
   document.getElementById('modalGameOver').classList.remove('open');
+  startNewGame(gameState.difficulty);
 });
 
 document.getElementById('btnRestart').addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  sfx.click();
   document.getElementById('modalGameOver').classList.remove('open');
   showMainMenu();
 });
 
 document.getElementById('btnWinNew').addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  sfx.click();
   document.getElementById('modalWin').classList.remove('open');
   showMainMenu();
 });
@@ -2471,6 +2820,7 @@ function saveToStorage() {
       notes: {},
       cages: gameState.cages,
       mistakes: gameState.mistakes,
+      hintsUsed: gameState.hintsUsed || 0,
       score: gameState.score,
       timerSeconds: gameState.timerSeconds,
       history: gameState.history.map(h => ({
@@ -2514,6 +2864,7 @@ function loadFromStorage(difficulty) {
       }
     }
     gameState.mistakes = data.mistakes || 0;
+    gameState.hintsUsed = data.hintsUsed || 0;
     gameState.score = data.score || 0;
     gameState.timerSeconds = data.timerSeconds || 0;
     gameState.history = Array.isArray(data.history) ? data.history.map(h => ({
@@ -2540,6 +2891,7 @@ function loadFromStorage(difficulty) {
 buildGridDOM();
 buildNumpadDOM();
 loadSettingsFromStorage();
+loadUserStats();
 new CentralGridEffect(document.getElementById('centralGridCanvas'));
 
 const initialDiff = localStorage.getItem('killer_sudoku_last_diff') || 'easy';
