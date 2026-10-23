@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>SUDOKU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --panel-bg: #b4b4b4;
+    --gutter-bg: #ffffff;
+    --box-bg: #ffffff;
+    --ink: #000000;
+    --gray-muted: #555555;
+    --gray-hair: #c8c8c8;
+    --error: #d90429;
+    --error-bg: #ffe5ea;
+
+    --highlight-selected: #dcd0ff;
+    --highlight-cage: #efeaff;
+    --highlight-peer: #f2f2f5;
+    --highlight-match: #d6d6d6;
+
+    --font-ui: 'Barlow Condensed', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* 1u = 1/1080 of screen width on mobile portrait */
+    --u: min(calc(100vw / 1080), calc(100dvh / 1720));
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100dvh;
+    background-color: #000000;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ==========================================================================
+     OUTER 1080-UNIT ARCHITECTURAL 9-PANEL PILLAR/GRID & GUTTER CANVAS
+     ========================================================================== */
+  .screen-canvas {
+    position: relative;
+    width: calc(1080 * var(--u));
+    height: 100dvh;
+    max-height: calc(2408 * var(--u));
+    background-color: var(--gutter-bg);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .grid-panel {
+    position: absolute;
+    background-color: var(--panel-bg);
+    box-shadow: inset 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.48);
+  }
+
+  /* Top Row (y = 0..78u) */
+  .panel-top-left {
+    left: 0;
+    top: 0;
+    width: calc(28 * var(--u));
+    height: calc(78 * var(--u));
+    border-right: calc(6 * var(--u)) solid var(--ink);
+    border-bottom: calc(6 * var(--u)) solid var(--ink);
+  }
+
+  .panel-top-center {
+    left: calc(73 * var(--u));
+    top: 0;
+    width: calc(934 * var(--u));
+    height: calc(78 * var(--u));
+    border-left: calc(11 * var(--u)) solid var(--ink);
+    border-right: calc(11 * var(--u)) solid var(--ink);
+    border-bottom: calc(6 * var(--u)) solid var(--ink);
+  }
+
+  .panel-top-right {
+    right: 0;
+    top: 0;
+    width: calc(28 * var(--u));
+    height: calc(78 * var(--u));
+    border-left: calc(6 * var(--u)) solid var(--ink);
+    border-bottom: calc(6 * var(--u)) solid var(--ink);
+  }
+
+  /* Clean Square Link inside Top-Center Panel */
+  .top-link-shadow-left,
+  .top-link-shadow-right {
+    position: absolute;
+    top: calc(13 * var(--u));
+    width: calc(53 * var(--u));
+    height: calc(53 * var(--u));
+    box-shadow: 0 0 calc(14 * var(--u)) rgba(0, 0, 0, 0.48);
+    z-index: 1;
+  }
+
+  .top-link-shadow-left {
+    left: calc((134 - 73 - 11) * var(--u));
+  }
+
+  .top-link-shadow-right {
+    left: calc((893 - 73 - 11) * var(--u));
+  }
+
+  .top-link-bar {
+    position: absolute;
+    left: calc((186 - 73 - 11) * var(--u));
+    top: calc(31 * var(--u));
+    width: calc(707 * var(--u));
+    height: calc(21 * var(--u));
+    background-color: var(--ink);
+    z-index: 2;
+  }
+
+  .top-link-sq {
+    position: absolute;
+    top: calc(13 * var(--u));
+    width: calc(53 * var(--u));
+    height: calc(53 * var(--u));
+    background-color: var(--box-bg);
+    z-index: 3;
+  }
+
+  .top-link-sq-left {
+    left: calc((134 - 73 - 11) * var(--u));
+  }
+
+  .top-link-sq-right {
+    left: calc((893 - 73 - 11) * var(--u));
+  }
+
+  .top-link-bar-white {
+    position: absolute;
+    left: calc((182 - 73 - 11) * var(--u));
+    top: calc(35 * var(--u));
+    width: calc(715 * var(--u));
+    height: calc(11 * var(--u));
+    background-color: var(--box-bg);
+    z-index: 4;
+  }
+
+  .top-link-core {
+    position: absolute;
+    top: calc(20 * var(--u));
+    width: calc(39 * var(--u));
+    height: calc(39 * var(--u));
+    background-color: var(--ink);
+    z-index: 5;
+  }
+
+  .top-link-core-left {
+    left: calc((141 - 73 - 11) * var(--u));
+  }
+
+  .top-link-core-right {
+    left: calc((900 - 73 - 11) * var(--u));
+  }
+
+  /* Middle Row Pillars & Center Main Panel (top = 123u, bottom = 122u) */
+  .panel-mid-left {
+    left: 0;
+    top: calc(123 * var(--u));
+    bottom: calc(122 * var(--u));
+    width: calc(28 * var(--u));
+    border-top: calc(11 * var(--u)) solid var(--ink);
+    border-right: calc(6 * var(--u)) solid var(--ink);
+    border-bottom: calc(11 * var(--u)) solid var(--ink);
+  }
+
+  .panel-mid-right {
+    right: 0;
+    top: calc(123 * var(--u));
+    bottom: calc(122 * var(--u));
+    width: calc(28 * var(--u));
+    border-top: calc(11 * var(--u)) solid var(--ink);
+    border-left: calc(6 * var(--u)) solid var(--ink);
+    border-bottom: calc(11 * var(--u)) solid var(--ink);
+  }
+
+  .app-panel {
+    position: absolute;
+    left: calc(73 * var(--u));
+    top: calc(123 * var(--u));
+    bottom: calc(122 * var(--u));
+    width: calc(934 * var(--u));
+    background-color: var(--panel-bg);
+    border: calc(11 * var(--u)) solid var(--ink);
+    overflow: hidden;
+  }
+
+  /* Animated Color-Shifting Grid Canvas Confined Strictly to Central Region */
+  .central-grid-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Inner Vignette Shadow Overlay over Central Region */
+  .central-vignette {
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 calc(22 * var(--u)) rgba(0, 0, 0, 0.52);
+    pointer-events: none;
+    z-index: 40;
+  }
+
+  /* Bottom Row (bottom = 0, height = 78u) */
+  .panel-bot-left {
+    left: 0;
+    bottom: 0;
+    width: calc(28 * var(--u));
+    height: calc(78 * var(--u));
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(6 * var(--u)) solid var(--ink);
+  }
+
+  .panel-bot-center {
+    left: calc(73 * var(--u));
+    bottom: 0;
+    width: calc(934 * var(--u));
+    height: calc(78 * var(--u));
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-left: calc(11 * var(--u)) solid var(--ink);
+    border-right: calc(11 * var(--u)) solid var(--ink);
+  }
+
+  .panel-bot-right {
+    right: 0;
+    bottom: 0;
+    width: calc(28 * var(--u));
+    height: calc(78 * var(--u));
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-left: calc(6 * var(--u)) solid var(--ink);
+  }
+
+  /* ==========================================================================
+     MAIN MENU UI (WITH BUTTON SHADOWS, WHITE NODE CIRCLES & CENTRAL GRID)
+     ========================================================================== */
+  .main-menu {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    background: transparent;
+    transition: opacity 0.16s ease, visibility 0.16s ease;
+  }
+
+  .main-menu.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* SUDOKU Title Box: Outer (216, 229, 648, 215) in 1080u canvas */
+  .menu-title-box {
+    position: absolute;
+    left: calc((216 - 73 - 11) * var(--u));
+    top: calc((229 - 123 - 11) * var(--u));
+    width: calc(648 * var(--u));
+    height: calc(215 * var(--u));
+    background-color: var(--box-bg);
+    border-top: calc(11 * var(--u)) solid var(--ink);
+    border-right: calc(16 * var(--u)) solid var(--ink);
+    border-bottom: calc(14 * var(--u)) solid var(--ink);
+    border-left: calc(16 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(4 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.52), 0 0 calc(16 * var(--u)) rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu-title-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Difficulty Boxes: Outer 404 x 134, Inner White 386 x 119, with Drop Shadows */
+  .menu-diff-btn {
+    position: absolute;
+    width: calc(404 * var(--u));
+    height: calc(134 * var(--u));
+    background-color: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(6 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, 0.55), 0 0 calc(14 * var(--u)) rgba(0, 0, 0, 0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    color: var(--ink);
+    z-index: 2;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .menu-diff-btn:active {
+    background-color: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .menu-diff-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Updated Centered Positions in 1080u Canvas:
+     EASY: (151, 626), MEDIUM: (503, 796), HARD: (151, 961), EXTREME: (503, 1126) */
+  .menu-diff-easy {
+    left: calc((151 - 73 - 11) * var(--u));
+    top: calc((626 - 123 - 11) * var(--u));
+  }
+
+  .menu-diff-medium {
+    left: calc((503 - 73 - 11) * var(--u));
+    top: calc((796 - 123 - 11) * var(--u));
+  }
+
+  .menu-diff-hard {
+    left: calc((151 - 73 - 11) * var(--u));
+    top: calc((961 - 123 - 11) * var(--u));
+  }
+
+  .menu-diff-extreme {
+    left: calc((503 - 73 - 11) * var(--u));
+    top: calc((1126 - 123 - 11) * var(--u));
+  }
+
+  /* Connecting Lines */
+  .menu-line {
+    position: absolute;
+    background-color: var(--ink);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Interactive Black Square Nodes (77 x 77) with Drop Shadow & Centered White Circle */
+  .menu-node {
+    position: absolute;
+    width: calc(77 * var(--u));
+    height: calc(77 * var(--u));
+    background-color: var(--ink);
+    border: none;
+    outline: none;
+    box-shadow: 0 calc(6 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.55), 0 0 calc(12 * var(--u)) rgba(0, 0, 0, 0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 2;
+    transition: transform 0.08s ease;
+  }
+
+  .menu-node::after {
+    content: "";
+    width: calc(45.5 * var(--u));
+    height: calc(45.5 * var(--u));
+    border-radius: 50%;
+    background-color: var(--box-bg);
+    transition: transform 0.08s ease;
+  }
+
+  .menu-node:active::after {
+    transform: scale(0.84);
+  }
+
+  .line-1-h {
+    left: calc((554 - 73 - 11) * var(--u));
+    top: calc((689 - 123 - 11) * var(--u));
+    width: calc(41 * var(--u));
+    height: calc(8 * var(--u));
+  }
+
+  .node-1 {
+    left: calc((594 - 73 - 11) * var(--u));
+    top: calc((658 - 123 - 11) * var(--u));
+  }
+
+  .line-2-v {
+    left: calc((419 - 73 - 11) * var(--u));
+    top: calc((759 - 123 - 11) * var(--u));
+    width: calc(10 * var(--u));
+    height: calc(70 * var(--u));
+  }
+
+  .node-2 {
+    left: calc((387 - 73 - 11) * var(--u));
+    top: calc((828 - 123 - 11) * var(--u));
+  }
+
+  .line-2-h {
+    left: calc((463 - 73 - 11) * var(--u));
+    top: calc((859 - 123 - 11) * var(--u));
+    width: calc(41 * var(--u));
+    height: calc(8 * var(--u));
+  }
+
+  .line-3-v {
+    left: calc((627 - 73 - 11) * var(--u));
+    top: calc((929 - 123 - 11) * var(--u));
+    width: calc(10 * var(--u));
+    height: calc(65 * var(--u));
+  }
+
+  .node-3 {
+    left: calc((594 - 73 - 11) * var(--u));
+    top: calc((993 - 123 - 11) * var(--u));
+  }
+
+  .line-3-h {
+    left: calc((554 - 73 - 11) * var(--u));
+    top: calc((1024 - 123 - 11) * var(--u));
+    width: calc(41 * var(--u));
+    height: calc(8 * var(--u));
+  }
+
+  .line-4-v {
+    left: calc((419 - 73 - 11) * var(--u));
+    top: calc((1094 - 123 - 11) * var(--u));
+    width: calc(10 * var(--u));
+    height: calc(65 * var(--u));
+  }
+
+  .node-4 {
+    left: calc((387 - 73 - 11) * var(--u));
+    top: calc((1158 - 123 - 11) * var(--u));
+  }
+
+  .line-4-h {
+    left: calc((463 - 73 - 11) * var(--u));
+    top: calc((1189 - 123 - 11) * var(--u));
+    width: calc(41 * var(--u));
+    height: calc(8 * var(--u));
+  }
+
+  /* ==========================================================================
+     IN-GAME VIEW (OVER THE SAME CENTRAL SHIFTING GRID)
+     ========================================================================== */
+  .game-view {
+    position: absolute;
+    inset: 0;
+    padding: calc(20 * var(--u)) calc(30 * var(--u)) calc(20 * var(--u));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: calc(16 * var(--u));
+    z-index: 10;
+    transition: opacity 0.16s ease, visibility 0.16s ease;
+  }
+
+  .game-view.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .top-bar {
+    width: calc(840 * var(--u));
+    height: calc(80 * var(--u));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: calc(82 * var(--u));
+    height: calc(80 * var(--u));
+    background: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .icon-btn:active {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .icon-btn svg {
+    width: calc(42 * var(--u));
+    height: calc(42 * var(--u));
+    display: block;
+  }
+
+  .stats-bar {
+    width: calc(840 * var(--u));
+    height: calc(84 * var(--u));
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(16 * var(--u));
+    flex-shrink: 0;
+  }
+
+  .stat-box {
+    background: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: calc(6 * var(--u));
+    gap: calc(3 * var(--u));
+  }
+
+  .stat-label {
+    font-family: var(--font-ui);
+    font-size: calc(20 * var(--u));
+    font-weight: 600;
+    color: var(--gray-muted);
+    letter-spacing: calc(1.5 * var(--u));
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .stat-val {
+    font-family: var(--font-ui);
+    font-size: calc(32 * var(--u));
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: calc(1 * var(--u));
+    line-height: 1;
+  }
+
+  .board-stage {
+    width: calc(840 * var(--u));
+    height: calc(840 * var(--u));
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .board-viewport {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background: var(--box-bg);
+    border-top: calc(11 * var(--u)) solid var(--ink);
+    border-right: calc(16 * var(--u)) solid var(--ink);
+    border-bottom: calc(14 * var(--u)) solid var(--ink);
+    border-left: calc(16 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(6 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.52);
+    overflow: hidden;
+  }
+
+  .killer-grid {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    position: relative;
+    z-index: 1;
+  }
+
+  .cages-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .cage-path {
+    fill: none;
+    stroke: #000000;
+    stroke-width: 2;
+    stroke-dasharray: 4.5, 4;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+
+  .cage-path.active-cage {
+    stroke-width: 2.8;
+  }
+
+  .cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--box-bg);
+    color: var(--ink);
+    cursor: pointer;
+    border-top: calc(1.5 * var(--u)) solid var(--gray-hair);
+    border-left: calc(1.5 * var(--u)) solid var(--gray-hair);
+    line-height: 1;
+    transition: background-color 0.08s ease;
+  }
+
+  .cell.b-top-thick { border-top: calc(5 * var(--u)) solid var(--ink); }
+  .cell.b-left-thick { border-left: calc(5 * var(--u)) solid var(--ink); }
+  .cell.b-bottom-thick { border-bottom: calc(5 * var(--u)) solid var(--ink); }
+  .cell.b-right-thick { border-right: calc(5 * var(--u)) solid var(--ink); }
+
+  .cage-sum {
+    position: absolute;
+    top: calc(5 * var(--u));
+    left: calc(7 * var(--u));
+    font-family: var(--font-ui);
+    font-size: calc(21 * var(--u));
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  .cell-value {
+    font-family: var(--font-ui);
+    font-size: calc(52 * var(--u));
+    font-weight: 600;
+    line-height: 1;
+    color: var(--ink);
+    z-index: 2;
+    margin-top: calc(6 * var(--u));
+  }
+
+  .cell.given .cell-value {
+    font-weight: 700;
+  }
+
+  .cell.peer-hl { background: var(--highlight-peer); }
+  .cell.cage-hl { background: var(--highlight-cage); }
+  .cell.match-hl { background: var(--highlight-match); }
+
+  .cell.selected {
+    background: var(--highlight-selected) !important;
+    z-index: 4;
+  }
+
+  .cell.error {
+    background: var(--error-bg) !important;
+  }
+
+  .cell.error .cell-value {
+    color: var(--error) !important;
+  }
+
+  .cell.shake {
+    animation: shake 0.24s linear;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(calc(-6 * var(--u))); }
+    75% { transform: translateX(calc(6 * var(--u))); }
+  }
+
+  .notes-grid {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    pointer-events: none;
+    padding: calc(14 * var(--u)) calc(4 * var(--u)) calc(2 * var(--u));
+    z-index: 2;
+  }
+
+  .note-digit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-ui);
+    font-size: calc(19 * var(--u));
+    font-weight: 600;
+    color: var(--gray-muted);
+    line-height: 1;
+  }
+
+  .note-digit.active-note-hl {
+    color: var(--box-bg);
+    background: var(--ink);
+  }
+
+  .pause-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(180, 180, 180, 0.92);
+    box-shadow: inset 0 0 calc(20 * var(--u)) rgba(0, 0, 0, 0.48);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    gap: calc(32 * var(--u));
+  }
+
+  .pause-mask.active {
+    display: flex;
+  }
+
+  .pause-title {
+    background: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+    padding: calc(18 * var(--u)) calc(48 * var(--u));
+    font-family: var(--font-ui);
+    font-size: calc(48 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(4 * var(--u));
+  }
+
+  .bottom-controls {
+    width: calc(840 * var(--u));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(16 * var(--u));
+    flex-shrink: 0;
+  }
+
+  .action-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(16 * var(--u));
+    height: calc(86 * var(--u));
+  }
+
+  .action-btn {
+    background: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+    font-family: var(--font-ui);
+    font-size: calc(32 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(2 * var(--u));
+    cursor: pointer;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .action-btn:active,
+  .action-btn.active {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .numpad {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: calc(10 * var(--u));
+    height: calc(122 * var(--u));
+  }
+
+  .num-btn {
+    height: 100%;
+    background: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(8 * var(--u)) solid var(--ink);
+    border-bottom: calc(8 * var(--u)) solid var(--ink);
+    border-left: calc(8 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(16 * var(--u)) rgba(0, 0, 0, 0.42);
+    font-family: var(--font-ui);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(3 * var(--u));
+    outline: none;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .num-btn:active {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .num-btn.completed {
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  .num-val {
+    font-size: calc(46 * var(--u));
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .num-rem {
+    font-size: calc(20 * var(--u));
+    font-weight: 600;
+    line-height: 1;
+    opacity: 0.72;
+  }
+
+  /* Centered NEW button below the numbers with medium margin */
+  .new-match-btn {
+    margin-top: calc(8 * var(--u));
+    width: calc(280 * var(--u));
+    height: calc(84 * var(--u));
+  }
+
+  /* ==========================================================================
+     MODALS
+     ========================================================================== */
+  .modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.62);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 120;
+    padding: calc(40 * var(--u));
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal-card {
+    background: var(--panel-bg);
+    border: calc(11 * var(--u)) solid var(--ink);
+    box-shadow: inset 0 0 calc(18 * var(--u)) rgba(0, 0, 0, 0.48), 0 0 calc(28 * var(--u)) rgba(0, 0, 0, 0.55);
+    width: 100%;
+    padding: calc(34 * var(--u));
+    display: flex;
+    flex-direction: column;
+    gap: calc(22 * var(--u));
+  }
+
+  .modal-title {
+    background: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    padding: calc(16 * var(--u)) calc(24 * var(--u));
+    font-family: var(--font-ui);
+    font-size: calc(40 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(3 * var(--u));
+    text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .setting-list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(14 * var(--u));
+  }
+
+  .setting-row {
+    background: var(--box-bg);
+    border-top: calc(5 * var(--u)) solid var(--ink);
+    border-right: calc(8 * var(--u)) solid var(--ink);
+    border-bottom: calc(8 * var(--u)) solid var(--ink);
+    border-left: calc(8 * var(--u)) solid var(--ink);
+    padding: calc(14 * var(--u)) calc(20 * var(--u));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .setting-row label {
+    font-family: var(--font-ui);
+    font-size: calc(30 * var(--u));
+    font-weight: 600;
+    letter-spacing: calc(1.5 * var(--u));
+    text-transform: uppercase;
+  }
+
+  .toggle-btn {
+    border: calc(6 * var(--u)) solid var(--ink);
+    background: var(--box-bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: calc(26 * var(--u));
+    font-weight: 700;
+    padding: calc(6 * var(--u)) calc(22 * var(--u));
+    cursor: pointer;
+  }
+
+  .toggle-btn.on {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .modal-body-box {
+    background: var(--box-bg);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    padding: calc(24 * var(--u));
+    font-family: var(--font-ui);
+    font-size: calc(32 * var(--u));
+    font-weight: 600;
+    line-height: 1.45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(12 * var(--u));
+    text-transform: uppercase;
+  }
+
+  .modal-btn-row {
+    display: flex;
+    gap: calc(18 * var(--u));
+    height: calc(92 * var(--u));
+  }
+
+  .modal-btn-row .action-btn {
+    flex: 1;
+    height: 100%;
+  }
+
+  #celebrationCanvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 150;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="celebrationCanvas"></canvas>
+
+<!-- ==========================================================================
+     FULL 1080-UNIT 9-PANEL PILLAR/GRID ARCHITECTURAL FRAME & TOP SQUARE LINK
+     ========================================================================== -->
+<div class="screen-canvas">
+
+  <!-- Top Row Panels -->
+  <div class="grid-panel panel-top-left"></div>
+  <div class="grid-panel panel-top-center">
+    <div class="top-link-shadow-left"></div>
+    <div class="top-link-shadow-right"></div>
+    <div class="top-link-bar"></div>
+    <div class="top-link-sq top-link-sq-left"></div>
+    <div class="top-link-sq top-link-sq-right"></div>
+    <div class="top-link-bar-white"></div>
+    <div class="top-link-core top-link-core-left"></div>
+    <div class="top-link-core top-link-core-right"></div>
+  </div>
+  <div class="grid-panel panel-top-right"></div>
+
+  <!-- Middle Row Left & Right Pillars -->
+  <div class="grid-panel panel-mid-left"></div>
+  <div class="grid-panel panel-mid-right"></div>
+
+  <!-- Bottom Row Panels -->
+  <div class="grid-panel panel-bot-left"></div>
+  <div class="grid-panel panel-bot-center"></div>
+  <div class="grid-panel panel-bot-right"></div>
+
+  <!-- Center Main Panel (x = 73..1006, y = 123..H-122) -->
+  <div class="app-panel" id="appPanel">
+
+    <!-- Animated Shifting-Color Grid & Random White Squares Confined to Central Region -->
+    <canvas class="central-grid-canvas" id="centralGridCanvas"></canvas>
+
+    <!-- ======================================================================
+         MAIN MENU OVERLAY
+         ====================================================================== -->
+    <section class="main-menu" id="mainMenu">
+      <div class="menu-title-box">
+        <svg class="menu-title-svg" viewBox="0 0 616 190" preserveAspectRatio="xMidYMid meet">
+          <path d="M 138.0 51.0 L 88.0 51.0 L 88.0 95.0 L 138.0 95.0 L 138.0 139.0 L 88.0 139.0 M 166.0 51.0 L 166.0 139.0 L 216.0 139.0 L 216.0 51.0 M 244.0 51.0 L 294.0 95.0 L 244.0 139.0 Z M 322.0 51.0 L 372.0 51.0 L 372.0 139.0 L 322.0 139.0 Z M 400.0 51.0 L 400.0 139.0 M 450.0 51.0 L 400.0 95.0 L 450.0 139.0 M 478.0 51.0 L 478.0 139.0 L 528.0 139.0 L 528.0 51.0"
+                fill="none" stroke="#000000" stroke-width="7.4" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"/>
+          <g fill="#000000">
+            <circle cx="138.0" cy="51.0" r="9.8"/><circle cx="88.0" cy="51.0" r="9.8"/><circle cx="88.0" cy="95.0" r="9.8"/><circle cx="138.0" cy="95.0" r="9.8"/><circle cx="138.0" cy="139.0" r="9.8"/><circle cx="88.0" cy="139.0" r="9.8"/><circle cx="166.0" cy="51.0" r="9.8"/><circle cx="166.0" cy="95.0" r="9.8"/><circle cx="166.0" cy="139.0" r="9.8"/><circle cx="216.0" cy="51.0" r="9.8"/><circle cx="216.0" cy="95.0" r="9.8"/><circle cx="216.0" cy="139.0" r="9.8"/><circle cx="244.0" cy="51.0" r="9.8"/><circle cx="244.0" cy="95.0" r="9.8"/><circle cx="244.0" cy="139.0" r="9.8"/><circle cx="294.0" cy="95.0" r="9.8"/><circle cx="322.0" cy="51.0" r="9.8"/><circle cx="322.0" cy="95.0" r="9.8"/><circle cx="322.0" cy="139.0" r="9.8"/><circle cx="372.0" cy="51.0" r="9.8"/><circle cx="372.0" cy="95.0" r="9.8"/><circle cx="372.0" cy="139.0" r="9.8"/><circle cx="400.0" cy="51.0" r="9.8"/><circle cx="400.0" cy="95.0" r="9.8"/><circle cx="400.0" cy="139.0" r="9.8"/><circle cx="450.0" cy="51.0" r="9.8"/><circle cx="450.0" cy="139.0" r="9.8"/><circle cx="478.0" cy="51.0" r="9.8"/><circle cx="478.0" cy="95.0" r="9.8"/><circle cx="478.0" cy="139.0" r="9.8"/><circle cx="528.0" cy="51.0" r="9.8"/><circle cx="528.0" cy="95.0" r="9.8"/><circle cx="528.0" cy="139.0" r="9.8"/>
+          </g>
+        </svg>
+      </div>
+
+      <button class="menu-diff-btn menu-diff-easy diff-pick" data-diff="easy" aria-label="EASY">
+        <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
+          <defs><clipPath id="cpEasy"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
+          <path clip-path="url(#cpEasy)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                d="M 157.27 46.30 L 140.30 46.30 L 140.30 72.70 L 157.27 72.70 M 140.30 59.50 L 154.71 59.50 M 168.07 80.01 L 176.58 45.61 L 185.09 80.01 M 170.79 64.40 L 182.36 64.40 M 214.50 51.19 L 214.22 50.41 L 213.83 49.67 L 213.34 48.97 L 212.76 48.34 L 212.10 47.78 L 211.37 47.30 L 210.58 46.91 L 209.74 46.61 L 208.87 46.41 L 207.98 46.31 L 207.08 46.32 L 206.19 46.42 L 205.32 46.63 L 204.48 46.94 L 203.70 47.34 L 202.97 47.83 L 202.32 48.40 L 201.75 49.03 L 201.27 49.73 L 200.89 50.48 L 200.61 51.26 L 200.44 52.08 L 200.39 52.90 L 200.45 53.53 L 200.61 54.12 L 200.88 54.69 L 201.24 55.23 L 201.68 55.75 L 202.20 56.24 L 202.78 56.71 L 203.42 57.17 L 204.11 57.61 L 204.84 58.04 L 205.60 58.47 L 206.38 58.88 L 207.17 59.29 L 207.97 59.71 L 208.76 60.12 L 209.54 60.53 L 210.30 60.96 L 211.03 61.39 L 211.71 61.83 L 212.35 62.29 L 212.94 62.76 L 213.45 63.25 L 213.90 63.77 L 214.26 64.31 L 214.52 64.88 L 214.69 65.47 L 214.75 66.10 L 214.75 66.10 L 214.69 66.92 L 214.52 67.74 L 214.25 68.52 L 213.87 69.27 L 213.39 69.97 L 212.82 70.60 L 212.16 71.17 L 211.44 71.66 L 210.65 72.06 L 209.82 72.37 L 208.95 72.58 L 208.06 72.68 L 207.16 72.69 L 206.27 72.59 L 205.40 72.39 L 204.56 72.09 L 203.77 71.70 L 203.04 71.22 L 202.38 70.66 L 201.80 70.03 L 201.31 69.33 L 200.92 68.59 L 200.63 67.81 M 229.65 38.99 L 237.68 60.90 L 245.70 38.99 M 237.68 59.50 L 237.68 77.00"/>
+        </svg>
+      </button>
+      <div class="menu-line line-1-h"></div>
+      <button class="menu-node node-1 node-new-pick" data-diff="easy" aria-label="New Easy Game"></button>
+
+      <div class="menu-line line-2-v"></div>
+      <button class="menu-node node-2 node-new-pick" data-diff="medium" aria-label="New Medium Game"></button>
+      <div class="menu-line line-2-h"></div>
+      <button class="menu-diff-btn menu-diff-medium diff-pick" data-diff="medium" aria-label="MEDIUM">
+        <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
+          <defs><clipPath id="cpMedium"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
+          <path clip-path="url(#cpMedium)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                d="M 110.92 42.00 L 110.92 77.00 M 131.81 42.00 L 131.81 77.00 M 111.96 40.28 L 121.37 66.50 L 130.78 40.28 M 164.88 46.30 L 147.91 46.30 L 147.91 72.70 L 164.88 72.70 M 147.91 59.50 L 162.33 59.50 M 176.68 59.50 L 176.68 46.30 L 183.98 46.30 L 188.00 46.30 L 188.29 46.35 L 188.59 46.51 L 188.87 46.78 L 189.15 47.14 L 189.42 47.61 L 189.68 48.17 L 189.93 48.82 L 190.16 49.56 L 190.37 50.38 L 190.57 51.27 L 190.74 52.23 L 190.89 53.24 L 191.02 54.31 L 191.12 55.42 L 191.20 56.56 L 191.26 57.73 L 191.28 58.91 L 191.28 60.09 L 191.26 61.27 L 191.20 62.44 L 191.12 63.58 L 191.02 64.69 L 190.89 65.76 L 190.74 66.77 L 190.57 67.73 L 190.37 68.62 L 190.16 69.44 L 189.93 70.18 L 189.68 70.83 L 189.42 71.39 L 189.15 71.86 L 188.87 72.22 L 188.59 72.49 L 188.29 72.65 L 188.00 72.70 L 176.68 72.70 L 176.68 59.50 Z M 207.38 42.00 L 207.38 77.00 M 223.48 42.00 L 223.48 65.40 L 223.48 65.40 L 223.53 66.19 L 223.66 66.97 L 223.87 67.73 L 224.16 68.46 L 224.53 69.16 L 224.97 69.82 L 225.49 70.42 L 226.06 70.96 L 226.69 71.44 L 227.37 71.85 L 228.08 72.18 L 228.83 72.43 L 229.61 72.60 L 230.39 72.69 L 231.18 72.69 L 231.97 72.60 L 232.74 72.43 L 233.49 72.18 L 234.21 71.85 L 234.88 71.44 L 235.51 70.96 L 236.09 70.42 L 236.60 69.82 L 237.04 69.16 L 237.41 68.46 L 237.71 67.73 L 237.92 66.97 L 238.05 66.19 L 238.09 65.40 L 238.09 42.00 M 254.19 42.00 L 254.19 77.00 M 275.08 42.00 L 275.08 77.00 M 255.22 40.28 L 264.63 66.50 L 274.04 40.28"/>
+        </svg>
+      </button>
+
+      <div class="menu-line line-3-v"></div>
+      <button class="menu-node node-3 node-new-pick" data-diff="hard" aria-label="New Hard Game"></button>
+      <div class="menu-line line-3-h"></div>
+      <button class="menu-diff-btn menu-diff-hard diff-pick" data-diff="hard" aria-label="HARD">
+        <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
+          <defs><clipPath id="cpHard"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
+          <path clip-path="url(#cpHard)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                d="M 139.24 42.00 L 139.24 77.00 M 153.84 42.00 L 153.84 77.00 M 139.24 59.50 L 153.84 59.50 M 169.14 80.01 L 177.65 45.61 L 186.16 80.01 M 171.86 64.40 L 183.44 64.40 M 201.46 77.00 L 201.46 46.30 L 208.76 46.30 L 208.76 46.30 L 209.55 46.34 L 210.33 46.46 L 211.09 46.66 L 211.83 46.94 L 212.52 47.29 L 213.18 47.71 L 213.78 48.20 L 214.33 48.74 L 214.80 49.34 L 215.21 49.98 L 215.54 50.66 L 215.80 51.38 L 215.97 52.11 L 216.05 52.85 L 216.05 53.61 L 215.97 54.35 L 215.80 55.08 L 215.54 55.80 L 215.21 56.48 L 214.80 57.12 L 214.33 57.72 L 213.78 58.26 L 213.18 58.75 L 212.52 59.17 L 211.83 59.52 L 211.09 59.80 L 210.33 60.00 L 209.55 60.12 L 208.76 60.16 L 201.46 60.16 M 209.49 59.50 L 216.75 80.01 M 232.16 59.50 L 232.16 46.30 L 239.46 46.30 L 243.48 46.30 L 243.77 46.35 L 244.07 46.51 L 244.35 46.78 L 244.63 47.14 L 244.90 47.61 L 245.16 48.17 L 245.41 48.82 L 245.64 49.56 L 245.85 50.38 L 246.05 51.27 L 246.22 52.23 L 246.37 53.24 L 246.50 54.31 L 246.60 55.42 L 246.68 56.56 L 246.74 57.73 L 246.76 58.91 L 246.76 60.09 L 246.74 61.27 L 246.68 62.44 L 246.60 63.58 L 246.50 64.69 L 246.37 65.76 L 246.22 66.77 L 246.05 67.73 L 245.85 68.62 L 245.64 69.44 L 245.41 70.18 L 245.16 70.83 L 244.90 71.39 L 244.63 71.86 L 244.35 72.22 L 244.07 72.49 L 243.77 72.65 L 243.48 72.70 L 232.16 72.70 L 232.16 59.50 Z"/>
+        </svg>
+      </button>
+
+      <div class="menu-line line-4-v"></div>
+      <button class="menu-node node-4 node-new-pick" data-diff="extreme" aria-label="New Extreme Game"></button>
+      <div class="menu-line line-4-h"></div>
+      <button class="menu-diff-btn menu-diff-extreme diff-pick" data-diff="extreme" aria-label="EXTREME">
+        <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
+          <defs><clipPath id="cpExtreme"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
+          <path clip-path="url(#cpExtreme)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
+                d="M 111.58 46.30 L 94.61 46.30 L 94.61 72.70 L 111.58 72.70 M 94.61 59.50 L 109.02 59.50 M 122.58 38.99 L 138.63 80.01 M 138.63 38.99 L 122.58 80.01 M 149.23 46.30 L 171.46 46.30 M 160.35 46.30 L 160.35 77.00 M 182.26 77.00 L 182.26 46.30 L 189.57 46.30 L 189.57 46.30 L 190.36 46.34 L 191.14 46.46 L 191.90 46.66 L 192.63 46.94 L 193.33 47.29 L 193.99 47.71 L 194.59 48.20 L 195.13 48.74 L 195.61 49.34 L 196.02 49.98 L 196.35 50.66 L 196.60 51.38 L 196.77 52.11 L 196.86 52.85 L 196.86 53.61 L 196.77 54.35 L 196.60 55.08 L 196.35 55.80 L 196.02 56.48 L 195.61 57.12 L 195.13 57.72 L 194.59 58.26 L 193.99 58.75 L 193.33 59.17 L 192.63 59.52 L 191.90 59.80 L 191.14 60.00 L 190.36 60.12 L 189.57 60.16 L 182.26 60.16 M 190.30 59.50 L 197.56 80.01 M 229.94 46.30 L 212.97 46.30 L 212.97 72.70 L 229.94 72.70 M 212.97 59.50 L 227.39 59.50 M 241.74 42.00 L 241.74 77.00 M 262.62 42.00 L 262.62 77.00 M 242.77 40.28 L 252.18 66.50 L 261.59 40.28 M 295.69 46.30 L 278.73 46.30 L 278.73 72.70 L 295.69 72.70 M 278.73 59.50 L 293.14 59.50"/>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ======================================================================
+         IN-GAME VIEW
+         ====================================================================== -->
+    <main class="game-view hidden" id="gameView">
+      <header class="top-bar">
+        <button class="icon-btn" id="btnMenuTop" aria-label="Menu">
+          <svg viewBox="0 0 44 44">
+            <rect x="4" y="8" width="36" height="5.5" fill="currentColor"/>
+            <rect x="4" y="19.25" width="36" height="5.5" fill="currentColor"/>
+            <rect x="4" y="30.5" width="36" height="5.5" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="btnSettings" aria-label="Settings">
+          <svg viewBox="0 0 44 44">
+            <path d="M 18.92 9.16 L 19.59 3.66 L 24.41 3.66 L 25.08 9.16 L 28.90 10.75 L 33.26 7.32 L 36.68 10.74 L 33.25 15.10 L 34.84 18.92 L 40.34 19.59 L 40.34 24.41 L 34.84 25.08 L 33.25 28.90 L 36.68 33.26 L 33.26 36.68 L 28.90 33.25 L 25.08 34.84 L 24.41 40.34 L 19.59 40.34 L 18.92 34.84 L 15.10 33.25 L 10.74 36.68 L 7.32 33.26 L 10.75 28.90 L 9.16 25.08 L 3.66 24.41 L 3.66 19.59 L 9.16 18.92 L 10.75 15.10 L 7.32 10.74 L 10.74 7.32 L 15.10 10.75 Z M 22.00 15.80 A 6.20 6.20 0 1 0 22.00 28.20 A 6.20 6.20 0 1 0 22.00 15.80 Z"
+                  fill="currentColor" fill-rule="evenodd"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="stats-bar">
+        <div class="stat-box">
+          <span class="stat-label">DIFF</span>
+          <span class="stat-val" id="statDiff">EASY</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">MISTAKES</span>
+          <span class="stat-val" id="statMistakes">0/3</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">SCORE</span>
+          <span class="stat-val" id="statScore">0</span>
+        </div>
+        <div class="stat-box" id="timerBox" style="cursor: pointer;">
+          <span class="stat-label">TIME</span>
+          <span class="stat-val" id="statTime">00:00</span>
+        </div>
+      </div>
+
+      <div class="board-stage">
+        <div class="board-viewport" id="boardViewport">
+          <svg class="cages-svg" id="cagesSvg" viewBox="0 0 900 900" preserveAspectRatio="none"></svg>
+          <div class="killer-grid" id="killerGrid"></div>
+          <div class="pause-mask" id="pauseMask">
+            <div class="pause-title">PAUSED</div>
+            <button class="action-btn" id="btnResume" style="height: calc(92 * var(--u)); padding: 0 calc(48 * var(--u));">RESUME</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-controls">
+        <div class="action-bar">
+          <button class="action-btn" id="btnUndo">UNDO</button>
+          <button class="action-btn" id="btnErase">ERASE</button>
+          <button class="action-btn" id="btnNotes">NOTES</button>
+          <button class="action-btn" id="btnHint">HINT</button>
+        </div>
+
+        <div class="numpad" id="numpad"></div>
+
+        <button class="action-btn new-match-btn" id="btnInGameNew">NEW</button>
+      </div>
+    </main>
+
+    <!-- Inner Vignette Shadow Over Central Region Edges -->
+    <div class="central-vignette"></div>
+
+    <!-- ======================================================================
+         MODALS
+         ====================================================================== -->
+    <div class="modal-overlay" id="modalConfirmNew">
+      <div class="modal-card">
+        <div class="modal-title">
+          <span>NEW GAME?</span>
+        </div>
+        <div class="modal-btn-row">
+          <button class="action-btn" id="btnConfirmYes">YES</button>
+          <button class="action-btn" id="btnConfirmNo">NO</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modalSettings">
+      <div class="modal-card">
+        <div class="modal-title">
+          <span>SETTINGS</span>
+        </div>
+        <div class="setting-list">
+          <div class="setting-row">
+            <label>AUTO CHECK</label>
+            <button class="toggle-btn on" id="toggleAutoCheck">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>MISTAKE LIMIT</label>
+            <button class="toggle-btn on" id="toggleMistakeLimit">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>HIGHLIGHT PEERS</label>
+            <button class="toggle-btn on" id="toggleHighlightPeers">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>SAME DIGITS</label>
+            <button class="toggle-btn on" id="toggleHighlightMatch">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>HIGHLIGHT CAGES</label>
+            <button class="toggle-btn on" id="toggleHighlightCage">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>AUTO NOTES</label>
+            <button class="toggle-btn on" id="toggleAutoRemoveNotes">ON</button>
+          </div>
+          <div class="setting-row">
+            <label>AUDIO</label>
+            <button class="toggle-btn on" id="toggleAudio">ON</button>
+          </div>
+        </div>
+        <div class="modal-btn-row">
+          <button class="action-btn modal-close">CLOSE</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modalGameOver">
+      <div class="modal-card">
+        <div class="modal-title">
+          <span>FAILED</span>
+        </div>
+        <div class="modal-btn-row">
+          <button class="action-btn" id="btnRevive">CONTINUE</button>
+          <button class="action-btn" id="btnRestart">MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modalWin">
+      <div class="modal-card">
+        <div class="modal-title">
+          <span>COMPLETE</span>
+        </div>
+        <div class="modal-body-box">
+          <div>DIFF: <strong id="winDiff">-</strong></div>
+          <div>TIME: <strong id="winTime">-</strong></div>
+          <div>MISTAKES: <strong id="winMistakes">-</strong></div>
+          <div>SCORE: <strong id="winScore">-</strong></div>
+        </div>
+        <div class="modal-btn-row">
+          <button class="action-btn" id="btnWinNew">MENU</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+/* ==========================================================================
+   ANIMATED CENTRAL GRID ENGINE (SHIFTING COLORS + RANDOM WHITE CELLS)
+   Confined strictly to the 19-column central panel (#centralGridCanvas)
+   ========================================================================== */
+class CentralGridEffect {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.cols = 19;
+    this.cellU = 48; // 19 * 48 = 912u exact inner width
+    this.lineU = 6.2;
+    this.width = 912;
+    this.height = 1780;
+    this.rows = 38;
+    this.activeCells = new Map();
+    this.lastTime = performance.now();
+
+    this.colorOrbs = [
+      { x: 0.28, y: 0.26, vx: 0.045, vy: 0.032, r: 0.34, color: [24, 115, 246] },
+      { x: 0.64, y: 0.28, vx: -0.038, vy: 0.041, r: 0.36, color: [10, 190, 248] },
+      { x: 0.24, y: 0.44, vx: 0.035, vy: -0.036, r: 0.30, color: [82, 56, 230] },
+      { x: 0.62, y: 0.74, vx: -0.032, vy: -0.028, r: 0.42, color: [150, 214, 254] },
+      { x: 0.50, y: 0.14, vx: 0.028, vy: 0.030, r: 0.38, color: [255, 255, 255] }
+    ];
+
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+    this.seedInitialWhiteCells();
+    requestAnimationFrame((t) => this.loop(t));
+  }
+
+  resize() {
+    const rect = this.canvas.parentElement.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.width = 912;
+    this.height = Math.max(912, Math.round((rect.height / Math.max(1, rect.width)) * 912));
+    this.canvas.width = Math.round(this.width * dpr / 2);
+    this.canvas.height = Math.round(this.height * dpr / 2);
+    this.scale = this.canvas.width / this.width;
+    this.rows = Math.ceil(this.height / this.cellU) + 1;
+  }
+
+  seedInitialWhiteCells() {
+    const seeds = [
+      [17, 6], [17, 7], [16, 8], [15, 9],
+      [6, 24], [7, 25], [7, 26], [6, 27],
+      [4, 28], [5, 28], [4, 29], [5, 30],
+      [9, 30], [10, 33]
+    ];
+    for (const [c, r] of seeds) {
+      this.activeCells.set(`${c},${r}`, {
+        c, r,
+        phase: Math.random() * Math.PI,
+        speed: 0.7 + Math.random() * 0.7,
+        maxAlpha: 0.82 + Math.random() * 0.18
+      });
+    }
+  }
+
+  spawnCellCluster() {
+    if (this.activeCells.size > 22) return;
+    const baseC = Math.floor(Math.random() * this.cols);
+    const baseR = Math.floor(Math.random() * this.rows);
+    const count = Math.random() < 0.45 ? (2 + Math.floor(Math.random() * 3)) : 1;
+    let c = baseC, r = baseR;
+    for (let i = 0; i < count; i++) {
+      const key = `${c},${r}`;
+      if (!this.activeCells.has(key) && c >= 0 && c < this.cols && r >= 0 && r < this.rows) {
+        this.activeCells.set(key, {
+          c, r,
+          phase: 0,
+          speed: 0.65 + Math.random() * 0.75,
+          maxAlpha: 0.80 + Math.random() * 0.20
+        });
+      }
+      c += Math.random() < 0.5 ? 1 : -1;
+      r += 1;
+    }
+  }
+
+  loop(now) {
+    const dt = Math.min(0.05, (now - this.lastTime) / 1000);
+    this.lastTime = now;
+    const t = now * 0.001;
+
+    if (Math.random() < dt * 2.8) {
+      this.spawnCellCluster();
+    }
+
+    const ctx = this.ctx;
+    const s = this.scale;
+    const W = this.width;
+    const H = this.height;
+
+    ctx.save();
+    ctx.scale(s, s);
+
+    // 1. Base matte gray fill (#b4b4b4)
+    ctx.fillStyle = '#b4b4b4';
+    ctx.fillRect(0, 0, W, H);
+
+    // 2. Random white-filling and unfilling squares
+    for (const [key, cell] of this.activeCells.entries()) {
+      cell.phase += dt * cell.speed * 1.4;
+      if (cell.phase >= Math.PI) {
+        this.activeCells.delete(key);
+        continue;
+      }
+      const alpha = Math.sin(cell.phase) * cell.maxAlpha;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+      ctx.fillRect(cell.c * this.cellU, cell.r * this.cellU, this.cellU, this.cellU);
+    }
+
+    // 3. Build grid path & clip to grid lines
+    ctx.save();
+    ctx.beginPath();
+    const halfL = this.lineU / 2;
+    for (let c = 1; c < this.cols; c++) {
+      const x = c * this.cellU - halfL;
+      ctx.rect(x, 0, this.lineU, H);
+    }
+    for (let r = 1; r < this.rows; r++) {
+      const y = r * this.cellU - halfL;
+      ctx.rect(0, y, W, this.lineU);
+    }
+    ctx.clip();
+
+    // Base crisp white/ice-light grid color
+    ctx.fillStyle = '#eef3fa';
+    ctx.fillRect(0, 0, W, H);
+
+    // Drifting shifting color fields along the grid lines
+    for (let i = 0; i < this.colorOrbs.length; i++) {
+      const orb = this.colorOrbs[i];
+      const ox = (0.5 + 0.38 * Math.sin(t * orb.vx * 8 + i * 1.7)) * W;
+      const oy = (0.5 + 0.40 * Math.cos(t * orb.vy * 8 + i * 2.3)) * H;
+      const rad = orb.r * W;
+      const grad = ctx.createRadialGradient(ox, oy, 0, ox, oy, rad);
+      const [cr, cg, cb] = orb.color;
+      grad.addColorStop(0, `rgba(${cr}, ${cg}, ${cb}, 0.96)`);
+      grad.addColorStop(0.55, `rgba(${cr}, ${cg}, ${cb}, 0.55)`);
+      grad.addColorStop(1, `rgba(${cr}, ${cg}, ${cb}, 0)`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(ox - rad, oy - rad, rad * 2, rad * 2);
+    }
+    ctx.restore();
+
+    ctx.restore();
+    requestAnimationFrame((nextT) => this.loop(nextT));
+  }
+}
+
+/* ==========================================================================
+   AUDIO & HAPTICS ENGINE
+   ========================================================================== */
+class AudioFX {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+  }
+  init() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) this.ctx = new AudioContext();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+  playTone(freq, type = 'sine', duration = 0.04, gainVal = 0.08) {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch(e) {}
+  }
+  vibrate(pattern) {
+    if (this.enabled && navigator.vibrate) {
+      navigator.vibrate(pattern);
+    }
+  }
+  click() { this.playTone(600, 'triangle', 0.03, 0.05); this.vibrate(8); }
+  note() { this.playTone(900, 'sine', 0.02, 0.03); this.vibrate(5); }
+  erase() { this.playTone(250, 'sawtooth', 0.05, 0.04); this.vibrate(12); }
+  error() { this.playTone(140, 'square', 0.18, 0.15); this.vibrate([40, 60, 40]); }
+  victory() {
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((f, idx) => {
+      setTimeout(() => this.playTone(f, 'triangle', 0.18, 0.12), idx * 120);
+    });
+    this.vibrate([100, 50, 100, 50, 200]);
+  }
+}
+const sfx = new AudioFX();
+
+const PEER_MAP = {};
+for (let r = 0; r < 9; r++) {
+  for (let c = 0; c < 9; c++) {
+    const key = `${r},${c}`;
+    const peers = new Set();
+    for (let i = 0; i < 9; i++) {
+      if (i !== c) peers.add(`${r},${i}`);
+      if (i !== r) peers.add(`${i},${c}`);
+    }
+    const br = Math.floor(r / 3) * 3;
+    const bc = Math.floor(c / 3) * 3;
+    for (let dr = 0; dr < 3; dr++) {
+      for (let dc = 0; dc < 3; dc++) {
+        const nr = br + dr;
+        const nc = bc + dc;
+        if (nr !== r || nc !== c) peers.add(`${nr},${nc}`);
+      }
+    }
+    PEER_MAP[key] = Array.from(peers);
+  }
+}
+
+let gameState = {
+  difficulty: 'easy',
+  solution: {},
+  clues: {},
+  board: {},
+  notes: {},
+  cages: [],
+  cellToCage: {},
+  mistakes: 0,
+  score: 0,
+  timerSeconds: 0,
+  isPaused: false,
+  isNotesMode: false,
+  selectedCell: null,
+  history: [],
+  gameOver: false,
+  won: false,
+  settings: {
+    autoCheck: true,
+    mistakeLimit: true,
+    highlightPeers: true,
+    highlightMatch: true,
+    highlightCage: true,
+    autoRemoveNotes: true,
+    audio: true
+  }
+};
+
+let timerInterval = null;
+let pendingNewDiff = null;
+const mainMenuEl = document.getElementById('mainMenu');
+const gameViewEl = document.getElementById('gameView');
+const modalConfirmNewEl = document.getElementById('modalConfirmNew');
+
+function showMainMenu() {
+  saveToStorage();
+  gameState.isPaused = true;
+  gameViewEl.classList.add('hidden');
+  mainMenuEl.classList.remove('hidden');
+}
+
+function hideMainMenu() {
+  mainMenuEl.classList.add('hidden');
+  gameViewEl.classList.remove('hidden');
+  gameState.isPaused = false;
+}
+
+function promptNewGameConfirmation(diff) {
+  pendingNewDiff = diff;
+  modalConfirmNewEl.classList.add('open');
+}
+
+function getCageSvgPath(cageCells, d = 4, S = 100) {
+  const cellSet = new Set(cageCells.map(([r, c]) => `${r},${c}`));
+  const edges = [];
+  for (const [r, c] of cageCells) {
+    if (!cellSet.has(`${r - 1},${c}`)) edges.push([[c, r], [c + 1, r], 'T']);
+    if (!cellSet.has(`${r},${c + 1}`)) edges.push([[c + 1, r], [c + 1, r + 1], 'R']);
+    if (!cellSet.has(`${r + 1},${c}`)) edges.push([[c + 1, r + 1], [c, r + 1], 'B']);
+    if (!cellSet.has(`${r},${c - 1}`)) edges.push([[c, r + 1], [c, r], 'L']);
+  }
+  const edgeMap = new Map();
+  for (const [p1, p2, ori] of edges) {
+    edgeMap.set(`${p1[0]},${p1[1]}`, [p2, ori]);
+  }
+  const loops = [];
+  const visited = new Set();
+  for (const startKey of edgeMap.keys()) {
+    if (visited.has(startKey)) continue;
+    let currKey = startKey;
+    const loop = [];
+    while (!visited.has(currKey)) {
+      visited.add(currKey);
+      const [nxt, ori] = edgeMap.get(currKey);
+      const currPt = currKey.split(',').map(Number);
+      loop.push([currPt, nxt, ori]);
+      currKey = `${nxt[0]},${nxt[1]}`;
+      if (currKey === startKey) break;
+    }
+    const merged = [];
+    for (const e of loop) {
+      if (merged.length > 0 && merged[merged.length - 1][2] === e[2]) {
+        merged[merged.length - 1][1] = e[1];
+      } else {
+        merged.push([...e]);
+      }
+    }
+    if (merged.length > 1 && merged[0][2] === merged[merged.length - 1][2]) {
+      merged[0][0] = merged[merged.length - 1][0];
+      merged.pop();
+    }
+    loops.push(merged);
+  }
+
+  const offsets = {
+    'T,R': [-d, d], 'R,B': [-d, -d], 'B,L': [d, -d], 'L,T': [d, d],
+    'T,L': [d, d], 'L,B': [d, -d], 'B,R': [-d, -d], 'R,T': [-d, d]
+  };
+
+  const pathStrs = [];
+  for (const loop of loops) {
+    const pts = [];
+    const n = loop.length;
+    for (let i = 0; i < n; i++) {
+      const [, p1, ori0] = loop[i];
+      const [, , ori1] = loop[(i + 1) % n];
+      const [dx, dy] = offsets[`${ori0},${ori1}`] || [0, 0];
+      pts.push([p1[0] * S + dx, p1[1] * S + dy]);
+    }
+    if (pts.length > 0) {
+      pathStrs.push(`M ${pts[0][0]} ${pts[0][1]} ` + pts.slice(1).map(p => `L ${p[0]} ${p[1]}`).join(' ') + ' Z');
+    }
+  }
+  return pathStrs.join(' ');
+}
+
+function generateKillerPuzzle(difficulty) {
+  const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+  function isSafe(r, c, val) {
+    for (let i = 0; i < 9; i++) {
+      if (grid[r][i] === val || grid[i][c] === val) return false;
+    }
+    const br = Math.floor(r / 3) * 3;
+    const bc = Math.floor(c / 3) * 3;
+    for (let dr = 0; dr < 3; dr++) {
+      for (let dc = 0; dc < 3; dc++) {
+        if (grid[br + dr][bc + dc] === val) return false;
+      }
+    }
+    return true;
+  }
+  function solveSudoku(r = 0, c = 0) {
+    if (r === 9) return true;
+    const nr = (c === 8) ? r + 1 : r;
+    const nc = (c === 8) ? 0 : c + 1;
+    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+    for (const n of nums) {
+      if (isSafe(r, c, n)) {
+        grid[r][c] = n;
+        if (solveSudoku(nr, nc)) return true;
+        grid[r][c] = 0;
+      }
+    }
+    return false;
+  }
+  solveSudoku();
+
+  const unassigned = new Set();
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) unassigned.add(`${r},${c}`);
+  }
+
+  function getNeighborCount(cellKey) {
+    const [r, c] = cellKey.split(',').map(Number);
+    let cnt = 0;
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      if (unassigned.has(`${r + dr},${c + dc}`)) cnt++;
+    }
+    return cnt;
+  }
+
+  const cages = [];
+  let cageId = 0;
+
+  while (unassigned.size > 0) {
+    let minKey = null;
+    let minNeigh = 999;
+    for (const k of unassigned) {
+      const nc = getNeighborCount(k);
+      if (nc < minNeigh) {
+        minNeigh = nc;
+        minKey = k;
+      }
+    }
+
+    const [sr, sc] = minKey.split(',').map(Number);
+    const cage = [[sr, sc]];
+    unassigned.delete(minKey);
+    const usedDigits = new Set([grid[sr][sc]]);
+
+    const targetSize = [1, 2, 2, 2, 3, 3, 3, 4, 4][Math.floor(Math.random() * 9)];
+
+    while (cage.length < targetSize) {
+      const candidates = [];
+      for (const [cr, cc] of cage) {
+        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+          const nr = cr + dr;
+          const nc = cc + dc;
+          const nk = `${nr},${nc}`;
+          if (unassigned.has(nk) && !usedDigits.has(grid[nr][nc])) {
+            candidates.push([nr, nc, nk]);
+          }
+        }
+      }
+      if (candidates.length === 0) break;
+
+      candidates.sort((a, b) => getNeighborCount(a[2]) - getNeighborCount(b[2]));
+      const [nextR, nextC, nextK] = candidates[0];
+      cage.push([nextR, nextC]);
+      unassigned.delete(nextK);
+      usedDigits.add(grid[nextR][nextC]);
+    }
+
+    cage.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+    const cageSum = cage.reduce((acc, [r, c]) => acc + grid[r][c], 0);
+
+    cages.push({
+      id: cageId++,
+      sum: cageSum,
+      cells: cage,
+      rootCell: cage[0]
+    });
+  }
+
+  const solution = {};
+  const cellToCage = {};
+  const board = {};
+  const clues = {};
+  const notes = {};
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const key = `${r},${c}`;
+      solution[key] = grid[r][c];
+      board[key] = 0;
+      notes[key] = new Set();
+    }
+  }
+
+  for (const cage of cages) {
+    for (const [r, c] of cage.cells) {
+      cellToCage[`${r},${c}`] = cage;
+    }
+  }
+
+  let clueTarget = 0;
+  if (difficulty === 'easy') clueTarget = 25;
+  else if (difficulty === 'medium') clueTarget = 14;
+  else if (difficulty === 'hard') clueTarget = 5;
+  else clueTarget = 0;
+
+  const allKeys = Object.keys(solution).sort(() => Math.random() - 0.5);
+  for (let i = 0; i < clueTarget; i++) {
+    const k = allKeys[i];
+    clues[k] = solution[k];
+    board[k] = solution[k];
+  }
+
+  return { solution, clues, board, notes, cages, cellToCage };
+}
+
+const killerGrid = document.getElementById('killerGrid');
+const cagesSvg = document.getElementById('cagesSvg');
+const cellDoms = {};
+
+function buildGridDOM() {
+  killerGrid.innerHTML = '';
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const cellEl = document.createElement('div');
+      const key = `${r},${c}`;
+      cellEl.className = 'cell';
+      cellEl.dataset.key = key;
+      cellEl.dataset.r = r;
+      cellEl.dataset.c = c;
+
+      if (r % 3 === 0) cellEl.classList.add('b-top-thick');
+      if (c % 3 === 0) cellEl.classList.add('b-left-thick');
+      if (r === 8) cellEl.classList.add('b-bottom-thick');
+      if (c === 8) cellEl.classList.add('b-right-thick');
+
+      const sumSpan = document.createElement('span');
+      sumSpan.className = 'cage-sum';
+      cellEl.appendChild(sumSpan);
+
+      const valSpan = document.createElement('span');
+      valSpan.className = 'cell-value';
+      cellEl.appendChild(valSpan);
+
+      const notesGrid = document.createElement('div');
+      notesGrid.className = 'notes-grid';
+      for (let d = 1; d <= 9; d++) {
+        const noteSpan = document.createElement('span');
+        noteSpan.className = `note-digit nd-${d}`;
+        notesGrid.appendChild(noteSpan);
+      }
+      cellEl.appendChild(notesGrid);
+
+      cellEl.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        selectCell(key);
+      });
+
+      cellDoms[key] = cellEl;
+      killerGrid.appendChild(cellEl);
+    }
+  }
+}
+
+function renderCagesSVG() {
+  cagesSvg.innerHTML = '';
+  for (const cage of gameState.cages) {
+    const pathStr = getCageSvgPath(cage.cells, 4, 100);
+    const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pathEl.setAttribute('class', 'cage-path');
+    pathEl.setAttribute('id', `cage-path-${cage.id}`);
+    pathEl.setAttribute('d', pathStr);
+    cagesSvg.appendChild(pathEl);
+  }
+}
+
+const numpadEl = document.getElementById('numpad');
+function buildNumpadDOM() {
+  numpadEl.innerHTML = '';
+  for (let d = 1; d <= 9; d++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.dataset.digit = d;
+    btn.innerHTML = `<span class="num-val">${d}</span><span class="num-rem" id="rem-${d}">9</span>`;
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handleNumberInput(d);
+    });
+    numpadEl.appendChild(btn);
+  }
+}
+
+function openDifficulty(difficulty) {
+  if (loadFromStorage(difficulty)) {
+    document.getElementById('pauseMask').classList.remove('active');
+    hideMainMenu();
+    startTimer();
+  } else {
+    startNewGame(difficulty);
+  }
+}
+
+function startNewGame(difficulty = 'easy') {
+  const generated = generateKillerPuzzle(difficulty);
+  gameState.difficulty = difficulty;
+  gameState.solution = generated.solution;
+  gameState.clues = generated.clues;
+  gameState.board = generated.board;
+  gameState.notes = generated.notes;
+  gameState.cages = generated.cages;
+  gameState.cellToCage = generated.cellToCage;
+  gameState.mistakes = 0;
+  gameState.score = 0;
+  gameState.timerSeconds = 0;
+  gameState.isPaused = false;
+  gameState.history = [];
+  gameState.gameOver = false;
+  gameState.won = false;
+  gameState.selectedCell = null;
+
+  document.getElementById('statDiff').textContent = difficulty.toUpperCase();
+  document.getElementById('pauseMask').classList.remove('active');
+
+  renderCagesSVG();
+  renderBoard();
+  updateStats();
+  updateNumpad();
+  hideMainMenu();
+  startTimer();
+  saveToStorage();
+}
+
+function selectCell(key) {
+  if (gameState.isPaused || gameState.gameOver || gameState.won) return;
+  sfx.init();
+  gameState.selectedCell = key;
+  sfx.click();
+  renderHighlights();
+}
+
+function handleNumberInput(digit) {
+  if (gameState.isPaused || gameState.gameOver || gameState.won) return;
+  if (!gameState.selectedCell) return;
+  const key = gameState.selectedCell;
+  if (gameState.clues[key]) return;
+
+  sfx.init();
+
+  if (gameState.isNotesMode) {
+    const cellNotes = gameState.notes[key];
+    const prev = new Set(cellNotes);
+    if (cellNotes.has(digit)) {
+      cellNotes.delete(digit);
+    } else {
+      cellNotes.add(digit);
+    }
+    sfx.note();
+    pushHistory({ type: 'note', key, prev, next: new Set(cellNotes) });
+    renderCell(key);
+    renderHighlights();
+  } else {
+    const prevVal = gameState.board[key];
+    if (prevVal === digit) return;
+
+    const isCorrect = (digit === gameState.solution[key]);
+    const prevNotes = new Set(gameState.notes[key]);
+    const affectedNotes = [];
+
+    gameState.board[key] = digit;
+    gameState.notes[key].clear();
+
+    const el = cellDoms[key];
+
+    if (gameState.settings.autoCheck && !isCorrect) {
+      gameState.mistakes++;
+      sfx.error();
+      updateStats();
+
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      setTimeout(() => el.classList.remove('shake'), 280);
+
+      pushHistory({ type: 'val', key, prevVal, nextVal: digit, prevNotes, affectedNotes, isMistake: true });
+
+      renderCell(key);
+      updateNumpad();
+      renderHighlights();
+      saveToStorage();
+
+      if (gameState.settings.mistakeLimit && gameState.mistakes >= 3) {
+        triggerGameOver();
+        return;
+      }
+      return;
+    }
+
+    gameState.score += 50;
+    sfx.click();
+
+    if (gameState.settings.autoRemoveNotes && isCorrect) {
+      const cage = gameState.cellToCage[key];
+      const allPeers = new Set(PEER_MAP[key]);
+      if (cage) {
+        for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+      }
+      allPeers.delete(key);
+
+      for (const peerKey of allPeers) {
+        if (gameState.notes[peerKey] && gameState.notes[peerKey].has(digit)) {
+          gameState.notes[peerKey].delete(digit);
+          affectedNotes.push(peerKey);
+          renderCell(peerKey);
+        }
+      }
+    }
+
+    pushHistory({ type: 'val', key, prevVal, nextVal: digit, prevNotes, affectedNotes, isMistake: false });
+
+    renderCell(key);
+    updateStats();
+    updateNumpad();
+    renderHighlights();
+
+    checkWinCondition();
+  }
+  saveToStorage();
+}
+
+function eraseSelected() {
+  if (gameState.isPaused || gameState.gameOver || gameState.won) return;
+  if (!gameState.selectedCell) return;
+  const key = gameState.selectedCell;
+  if (gameState.clues[key]) return;
+
+  sfx.init();
+  const prevVal = gameState.board[key];
+  const prevNotes = new Set(gameState.notes[key]);
+
+  if (prevVal !== 0 || prevNotes.size > 0) {
+    gameState.board[key] = 0;
+    gameState.notes[key].clear();
+    sfx.erase();
+    pushHistory({ type: 'erase', key, prevVal, prevNotes });
+    renderCell(key);
+    updateStats();
+    updateNumpad();
+    renderHighlights();
+    saveToStorage();
+  }
+}
+
+function giveHint() {
+  if (gameState.isPaused || gameState.gameOver || gameState.won) return;
+  sfx.init();
+
+  let targetKey = gameState.selectedCell;
+  if (!targetKey || gameState.clues[targetKey] || gameState.board[targetKey] === gameState.solution[targetKey]) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const k = `${r},${c}`;
+        if (gameState.board[k] !== gameState.solution[k]) {
+          targetKey = k;
+          break;
+        }
+      }
+      if (targetKey) break;
+    }
+  }
+
+  if (!targetKey) return;
+
+  const correctVal = gameState.solution[targetKey];
+  const prevVal = gameState.board[targetKey];
+  const prevNotes = new Set(gameState.notes[targetKey]);
+
+  gameState.selectedCell = targetKey;
+  gameState.board[targetKey] = correctVal;
+  gameState.notes[targetKey].clear();
+  gameState.score = Math.max(0, gameState.score - 20);
+
+  const affectedNotes = [];
+  if (gameState.settings.autoRemoveNotes) {
+    const cage = gameState.cellToCage[targetKey];
+    const allPeers = new Set(PEER_MAP[targetKey]);
+    if (cage) {
+      for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+    }
+    allPeers.delete(targetKey);
+
+    for (const peerKey of allPeers) {
+      if (gameState.notes[peerKey] && gameState.notes[peerKey].has(correctVal)) {
+        gameState.notes[peerKey].delete(correctVal);
+        affectedNotes.push(peerKey);
+        renderCell(peerKey);
+      }
+    }
+  }
+
+  pushHistory({ type: 'val', key: targetKey, prevVal, nextVal: correctVal, prevNotes, affectedNotes, isMistake: false });
+
+  sfx.click();
+  renderCell(targetKey);
+  updateStats();
+  updateNumpad();
+  renderHighlights();
+  saveToStorage();
+
+  checkWinCondition();
+}
+
+function undoLastAction() {
+  if (gameState.isPaused || gameState.gameOver || gameState.won) return;
+  if (gameState.history.length === 0) return;
+  sfx.init();
+
+  const action = gameState.history.pop();
+  sfx.click();
+
+  if (action.type === 'val' || action.type === 'erase') {
+    gameState.board[action.key] = action.prevVal;
+    gameState.notes[action.key] = new Set(action.prevNotes);
+    if (action.affectedNotes) {
+      for (const peerKey of action.affectedNotes) {
+        gameState.notes[peerKey].add(action.nextVal);
+        renderCell(peerKey);
+      }
+    }
+    if (action.isMistake) {
+      gameState.mistakes = Math.max(0, gameState.mistakes - 1);
+      updateStats();
+    }
+    renderCell(action.key);
+  } else if (action.type === 'note') {
+    gameState.notes[action.key] = new Set(action.prev);
+    renderCell(action.key);
+  }
+
+  gameState.selectedCell = action.key;
+  renderHighlights();
+  updateNumpad();
+  saveToStorage();
+}
+
+function pushHistory(item) {
+  gameState.history.push(item);
+  if (gameState.history.length > 50) gameState.history.shift();
+}
+
+function renderBoard() {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      renderCell(`${r},${c}`);
+    }
+  }
+  renderHighlights();
+}
+
+function renderCell(key) {
+  const el = cellDoms[key];
+  if (!el) return;
+
+  const [r, c] = key.split(',').map(Number);
+  const val = gameState.board[key];
+  const isGiven = !!gameState.clues[key];
+  const isError = (val !== 0 && !isGiven && gameState.settings.autoCheck && val !== gameState.solution[key]);
+  const valSpan = el.querySelector('.cell-value');
+  const sumSpan = el.querySelector('.cage-sum');
+  const notesGrid = el.querySelector('.notes-grid');
+
+  const cage = gameState.cellToCage[key];
+  if (cage && cage.rootCell[0] === r && cage.rootCell[1] === c) {
+    sumSpan.textContent = cage.sum;
+  } else {
+    sumSpan.textContent = '';
+  }
+
+  if (val !== 0) {
+    valSpan.textContent = val;
+    valSpan.style.display = 'block';
+    notesGrid.style.display = 'none';
+
+    el.classList.toggle('given', isGiven);
+    el.classList.toggle('user-val', !isGiven && !isError);
+    el.classList.toggle('error', isError);
+  } else {
+    valSpan.textContent = '';
+    valSpan.style.display = 'none';
+    notesGrid.style.display = 'grid';
+
+    el.classList.remove('given', 'user-val', 'error');
+
+    const cellNotes = gameState.notes[key];
+    for (let d = 1; d <= 9; d++) {
+      const noteEl = notesGrid.querySelector(`.nd-${d}`);
+      noteEl.textContent = cellNotes.has(d) ? d : '';
+    }
+  }
+}
+
+function renderHighlights() {
+  const selKey = gameState.selectedCell;
+  const selVal = selKey ? gameState.board[selKey] : 0;
+  const peerList = selKey ? PEER_MAP[selKey] : null;
+  const peerSet = peerList ? new Set(peerList) : null;
+  const selCage = selKey ? gameState.cellToCage[selKey] : null;
+  const cageCellSet = (selCage && gameState.settings.highlightCage) ? new Set(selCage.cells.map(([r, c]) => `${r},${c}`)) : null;
+
+  document.querySelectorAll('.cage-path').forEach(p => p.classList.remove('active-cage'));
+  if (selCage) {
+    const activePath = document.getElementById(`cage-path-${selCage.id}`);
+    if (activePath) activePath.classList.add('active-cage');
+  }
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const k = `${r},${c}`;
+      const el = cellDoms[k];
+      const val = gameState.board[k];
+
+      const isSelected = (k === selKey);
+      const isCage = cageCellSet && cageCellSet.has(k);
+      const isPeer = peerSet && gameState.settings.highlightPeers && peerSet.has(k);
+      const isMatch = selVal && gameState.settings.highlightMatch && (val === selVal);
+
+      el.classList.toggle('selected', isSelected);
+      el.classList.toggle('cage-hl', !isSelected && !!isCage);
+      el.classList.toggle('peer-hl', !isSelected && !isCage && !!isPeer);
+      el.classList.toggle('match-hl', !isSelected && !isCage && !isPeer && !!isMatch);
+
+      if (selVal && val === 0) {
+        const noteDigits = el.querySelectorAll('.note-digit');
+        noteDigits.forEach((nd, i) => {
+          nd.classList.toggle('active-note-hl', (i + 1 === selVal) && gameState.notes[k].has(selVal));
+        });
+      } else if (val === 0) {
+        el.querySelectorAll('.note-digit').forEach(nd => nd.classList.remove('active-note-hl'));
+      }
+    }
+  }
+}
+
+function updateStats() {
+  document.getElementById('statMistakes').textContent = `${gameState.mistakes}/3`;
+  document.getElementById('statScore').textContent = gameState.score;
+  const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
+  const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('statTime').textContent = `${m}:${s}`;
+}
+
+function updateNumpad() {
+  const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const k = `${r},${c}`;
+      const v = gameState.board[k];
+      if (v >= 1 && v <= 9 && v === gameState.solution[k]) {
+        counts[v]++;
+      }
+    }
+  }
+
+  for (let d = 1; d <= 9; d++) {
+    const rem = 9 - counts[d];
+    const remEl = document.getElementById(`rem-${d}`);
+    const btn = numpadEl.querySelector(`[data-digit="${d}"]`);
+    if (remEl) remEl.textContent = Math.max(0, rem);
+    if (btn) btn.classList.toggle('completed', rem <= 0);
+  }
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!gameState.isPaused && !gameState.gameOver && !gameState.won && !modalConfirmNewEl.classList.contains('open')) {
+      gameState.timerSeconds++;
+      updateStats();
+      if (gameState.timerSeconds % 10 === 0) saveToStorage();
+    }
+  }, 1000);
+}
+
+function togglePause() {
+  if (gameState.gameOver || gameState.won) return;
+  gameState.isPaused = !gameState.isPaused;
+  document.getElementById('pauseMask').classList.toggle('active', gameState.isPaused);
+  sfx.click();
+}
+
+function checkWinCondition() {
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const k = `${r},${c}`;
+      if (gameState.board[k] !== gameState.solution[k]) return false;
+    }
+  }
+
+  gameState.won = true;
+  clearInterval(timerInterval);
+  sfx.victory();
+  fireConfetti();
+
+  const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
+  const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('winDiff').textContent = gameState.difficulty.toUpperCase();
+  document.getElementById('winTime').textContent = `${m}:${s}`;
+  document.getElementById('winMistakes').textContent = `${gameState.mistakes}/3`;
+  document.getElementById('winScore').textContent = gameState.score;
+
+  document.getElementById('modalWin').classList.add('open');
+  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  return true;
+}
+
+function triggerGameOver() {
+  gameState.gameOver = true;
+  clearInterval(timerInterval);
+  sfx.error();
+  document.getElementById('modalGameOver').classList.add('open');
+}
+
+function fireConfetti() {
+  const canvas = document.getElementById('celebrationCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  for (let i = 0; i < 90; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: (Math.random() - 0.5) * 14,
+      vy: (Math.random() - 0.7) * 16,
+      size: Math.random() * 6 + 3,
+      color: Math.random() > 0.4 ? '#000000' : '#ffffff',
+      life: 100
+    });
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let active = false;
+    for (const p of particles) {
+      if (p.life > 0) {
+        active = true;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.life--;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
+    }
+    if (active) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+    return;
+  }
+  if (!mainMenuEl.classList.contains('hidden')) return;
+  if (gameState.isPaused || gameState.gameOver || gameState.won || modalConfirmNewEl.classList.contains('open')) return;
+
+  if (e.key >= '1' && e.key <= '9') {
+    handleNumberInput(parseInt(e.key, 10));
+    return;
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    eraseSelected();
+    return;
+  }
+  if (e.key === 'n' || e.key === 'N' || e.key === 'p' || e.key === 'P') {
+    toggleNotes();
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+    undoLastAction();
+    return;
+  }
+  if (e.key === 'h' || e.key === 'H') {
+    giveHint();
+    return;
+  }
+  if (e.key === ' ') {
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+    if (!gameState.selectedCell) {
+      selectCell('0,0');
+      return;
+    }
+    const [currR, currC] = gameState.selectedCell.split(',').map(Number);
+    let dr = 0, dc = 0;
+    if (e.key === 'ArrowUp') dr = -1;
+    if (e.key === 'ArrowDown') dr = 1;
+    if (e.key === 'ArrowLeft') dc = -1;
+    if (e.key === 'ArrowRight') dc = 1;
+
+    const nr = Math.max(0, Math.min(8, currR + dr));
+    const nc = Math.max(0, Math.min(8, currC + dc));
+    selectCell(`${nr},${nc}`);
+  }
+});
+
+function toggleNotes() {
+  gameState.isNotesMode = !gameState.isNotesMode;
+  sfx.click();
+  document.getElementById('btnNotes').classList.toggle('active', gameState.isNotesMode);
+}
+
+document.getElementById('btnNotes').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  toggleNotes();
+});
+
+document.getElementById('btnUndo').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  undoLastAction();
+});
+
+document.getElementById('btnErase').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  eraseSelected();
+});
+
+document.getElementById('btnHint').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  giveHint();
+});
+
+document.getElementById('timerBox').addEventListener('pointerdown', togglePause);
+document.getElementById('btnResume').addEventListener('pointerdown', togglePause);
+
+document.getElementById('btnSettings').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  document.getElementById('modalSettings').classList.add('open');
+});
+
+document.getElementById('btnMenuTop').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  showMainMenu();
+});
+
+document.getElementById('btnInGameNew').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  promptNewGameConfirmation(gameState.difficulty);
+});
+
+document.querySelectorAll('.node-new-pick').forEach(nodeBtn => {
+  nodeBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    sfx.click();
+    promptNewGameConfirmation(nodeBtn.dataset.diff);
+  });
+});
+
+document.getElementById('btnConfirmYes').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  modalConfirmNewEl.classList.remove('open');
+  if (pendingNewDiff) {
+    startNewGame(pendingNewDiff);
+    pendingNewDiff = null;
+  }
+});
+
+document.getElementById('btnConfirmNo').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  modalConfirmNewEl.classList.remove('open');
+  pendingNewDiff = null;
+});
+
+document.querySelectorAll('.modal-close').forEach(el => {
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    sfx.click();
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open'));
+  });
+});
+
+document.querySelectorAll('.diff-pick').forEach(btn => {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    sfx.click();
+    openDifficulty(btn.dataset.diff);
+  });
+});
+
+document.getElementById('btnRevive').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  gameState.mistakes = 2;
+  gameState.gameOver = false;
+  startTimer();
+  updateStats();
+  saveToStorage();
+  document.getElementById('modalGameOver').classList.remove('open');
+});
+
+document.getElementById('btnRestart').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  document.getElementById('modalGameOver').classList.remove('open');
+  showMainMenu();
+});
+
+document.getElementById('btnWinNew').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  document.getElementById('modalWin').classList.remove('open');
+  showMainMenu();
+});
+
+function bindToggle(id, settingKey) {
+  const el = document.getElementById(id);
+  el.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    gameState.settings[settingKey] = !gameState.settings[settingKey];
+    el.classList.toggle('on', gameState.settings[settingKey]);
+    el.textContent = gameState.settings[settingKey] ? 'ON' : 'OFF';
+    if (settingKey === 'audio') sfx.enabled = gameState.settings[settingKey];
+    sfx.click();
+    renderBoard();
+    saveSettingsToStorage();
+  });
+}
+bindToggle('toggleAutoCheck', 'autoCheck');
+bindToggle('toggleMistakeLimit', 'mistakeLimit');
+bindToggle('toggleHighlightPeers', 'highlightPeers');
+bindToggle('toggleHighlightMatch', 'highlightMatch');
+bindToggle('toggleHighlightCage', 'highlightCage');
+bindToggle('toggleAutoRemoveNotes', 'autoRemoveNotes');
+bindToggle('toggleAudio', 'audio');
+
+function saveSettingsToStorage() {
+  try {
+    localStorage.setItem('killer_sudoku_settings', JSON.stringify(gameState.settings));
+  } catch(e) {}
+}
+
+function loadSettingsFromStorage() {
+  try {
+    const raw = localStorage.getItem('killer_sudoku_settings');
+    if (!raw) return;
+    const savedSettings = JSON.parse(raw);
+    gameState.settings = { ...gameState.settings, ...savedSettings };
+    sfx.enabled = gameState.settings.audio;
+    const map = {
+      toggleAutoCheck: 'autoCheck',
+      toggleMistakeLimit: 'mistakeLimit',
+      toggleHighlightPeers: 'highlightPeers',
+      toggleHighlightMatch: 'highlightMatch',
+      toggleHighlightCage: 'highlightCage',
+      toggleAutoRemoveNotes: 'autoRemoveNotes',
+      toggleAudio: 'audio'
+    };
+    for (const [id, key] of Object.entries(map)) {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.toggle('on', !!gameState.settings[key]);
+        btn.textContent = gameState.settings[key] ? 'ON' : 'OFF';
+      }
+    }
+  } catch(e) {}
+}
+
+function saveToStorage() {
+  if (!gameState.difficulty || gameState.won || gameState.gameOver || Object.keys(gameState.solution).length === 0) return;
+  try {
+    const data = {
+      difficulty: gameState.difficulty,
+      solution: gameState.solution,
+      clues: gameState.clues,
+      board: gameState.board,
+      notes: {},
+      cages: gameState.cages,
+      mistakes: gameState.mistakes,
+      score: gameState.score,
+      timerSeconds: gameState.timerSeconds,
+      history: gameState.history.map(h => ({
+        ...h,
+        prev: h.prev ? Array.from(h.prev) : undefined,
+        next: h.next ? Array.from(h.next) : undefined,
+        prevNotes: h.prevNotes ? Array.from(h.prevNotes) : undefined
+      }))
+    };
+    for (const k in gameState.notes) {
+      data.notes[k] = Array.from(gameState.notes[k]);
+    }
+    localStorage.setItem(`killer_sudoku_save_${gameState.difficulty}`, JSON.stringify(data));
+    localStorage.setItem('killer_sudoku_last_diff', gameState.difficulty);
+  } catch(e) {}
+}
+
+function loadFromStorage(difficulty) {
+  try {
+    const raw = localStorage.getItem(`killer_sudoku_save_${difficulty}`);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !data.solution || !data.cages) return false;
+
+    gameState.difficulty = difficulty;
+    gameState.solution = data.solution;
+    gameState.clues = data.clues || {};
+    gameState.board = data.board || {};
+    gameState.cages = data.cages;
+    gameState.notes = {};
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const k = `${r},${c}`;
+        gameState.notes[k] = new Set((data.notes && data.notes[k]) ? data.notes[k] : []);
+      }
+    }
+    gameState.cellToCage = {};
+    for (const cage of gameState.cages) {
+      for (const [r, c] of cage.cells) {
+        gameState.cellToCage[`${r},${c}`] = cage;
+      }
+    }
+    gameState.mistakes = data.mistakes || 0;
+    gameState.score = data.score || 0;
+    gameState.timerSeconds = data.timerSeconds || 0;
+    gameState.history = Array.isArray(data.history) ? data.history.map(h => ({
+      ...h,
+      prev: h.prev ? new Set(h.prev) : undefined,
+      next: h.next ? new Set(h.next) : undefined,
+      prevNotes: h.prevNotes ? new Set(h.prevNotes) : undefined
+    })) : [];
+    gameState.gameOver = false;
+    gameState.won = false;
+    gameState.selectedCell = null;
+
+    document.getElementById('statDiff').textContent = gameState.difficulty.toUpperCase();
+    renderCagesSVG();
+    renderBoard();
+    updateStats();
+    updateNumpad();
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+buildGridDOM();
+buildNumpadDOM();
+loadSettingsFromStorage();
+new CentralGridEffect(document.getElementById('centralGridCanvas'));
+
+const initialDiff = localStorage.getItem('killer_sudoku_last_diff') || 'easy';
+if (!loadFromStorage(initialDiff)) {
+  startNewGame(initialDiff);
+}
+showMainMenu();
+</script>
+</body>
+</html>
