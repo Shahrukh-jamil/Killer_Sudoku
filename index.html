@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>SUDOKU</title>
+<title>SUDOKU — 4SUM & KILLER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -274,6 +275,52 @@
     display: block;
   }
 
+  /* Mode Switcher Bar (4SUM / KILLER) */
+  .menu-mode-bar {
+    position: absolute;
+    left: calc((216 - 73 - 11) * var(--u));
+    top: calc((478 - 123 - 11) * var(--u));
+    width: calc(648 * var(--u));
+    height: calc(106 * var(--u));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(20 * var(--u));
+    z-index: 3;
+  }
+
+  .menu-mode-btn {
+    background-color: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(6 * var(--u)) calc(20 * var(--u)) rgba(0, 0, 0, 0.5), 0 0 calc(12 * var(--u)) rgba(0, 0, 0, 0.34);
+    font-family: var(--font-ui);
+    font-size: calc(40 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(3.5 * var(--u));
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(14 * var(--u));
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .menu-mode-btn.active {
+    background-color: var(--ink);
+    color: var(--box-bg);
+  }
+
+  .menu-mode-icon {
+    width: calc(54 * var(--u));
+    height: calc(34 * var(--u));
+    display: block;
+    flex-shrink: 0;
+  }
+
   .menu-diff-btn {
     position: absolute;
     width: calc(404 * var(--u));
@@ -490,6 +537,34 @@
     flex-shrink: 0;
   }
 
+  .mode-pill-btn {
+    height: calc(80 * var(--u));
+    padding: 0 calc(28 * var(--u));
+    background: var(--box-bg);
+    color: var(--ink);
+    border-top: calc(6 * var(--u)) solid var(--ink);
+    border-right: calc(9 * var(--u)) solid var(--ink);
+    border-bottom: calc(9 * var(--u)) solid var(--ink);
+    border-left: calc(9 * var(--u)) solid var(--ink);
+    box-shadow: 0 calc(5 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, 0.45);
+    font-family: var(--font-ui);
+    font-size: calc(30 * var(--u));
+    font-weight: 700;
+    letter-spacing: calc(2.5 * var(--u));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(12 * var(--u));
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.08s ease, color 0.08s ease;
+  }
+
+  .mode-pill-btn:active {
+    background: var(--ink);
+    color: var(--box-bg);
+  }
+
   .icon-btn {
     width: calc(82 * var(--u));
     height: calc(80 * var(--u));
@@ -613,6 +688,50 @@
 
   .cage-path.active-cage {
     stroke-width: 2.8;
+  }
+
+  /* 4SUM Paired Vertex Dots & Curved Halo Tethers */
+  .foursum-tether-halo {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 11;
+    stroke-linecap: round;
+  }
+
+  .foursum-tether {
+    fill: none;
+    stroke: #000000;
+    stroke-width: 5.2;
+    stroke-dasharray: 12, 8;
+    stroke-linecap: round;
+    transition: stroke-width 0.1s ease;
+  }
+
+  .foursum-pair.adj-pair .foursum-tether {
+    stroke-dasharray: none;
+  }
+
+  .foursum-dot-halo {
+    fill: #ffffff;
+  }
+
+  .foursum-dot {
+    fill: #000000;
+    transition: r 0.1s ease;
+  }
+
+  .foursum-dot-core {
+    fill: #ffffff;
+    transition: fill 0.1s ease, r 0.1s ease;
+  }
+
+  .foursum-pair.active-pair .foursum-tether {
+    stroke-width: 7.2;
+  }
+
+  .foursum-pair.active-pair .foursum-dot-core {
+    fill: #dcd0ff;
+    r: 6;
   }
 
   .cell {
@@ -1093,6 +1212,24 @@
         </svg>
       </div>
 
+      <!-- Variant Mode Selector: 4SUM vs KILLER -->
+      <div class="menu-mode-bar">
+        <button class="menu-mode-btn active" id="btnMode4Sum" data-mode="4sum" aria-label="4SUM Mode">
+          <svg class="menu-mode-icon" viewBox="0 0 60 36">
+            <path d="M 12 22 Q 30 6 48 22" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="5,4" stroke-linecap="round"/>
+            <circle cx="12" cy="22" r="7.5" fill="currentColor"/>
+            <circle cx="48" cy="22" r="7.5" fill="currentColor"/>
+          </svg>
+          <span>4SUM</span>
+        </button>
+        <button class="menu-mode-btn" id="btnModeKiller" data-mode="killer" aria-label="KILLER Mode">
+          <svg class="menu-mode-icon" viewBox="0 0 48 36">
+            <rect x="6" y="5" width="36" height="26" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="5,4"/>
+          </svg>
+          <span>KILLER</span>
+        </button>
+      </div>
+
       <button class="menu-diff-btn menu-diff-easy diff-pick" data-diff="easy" aria-label="EASY">
         <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
           <defs><clipPath id="cpEasy"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
@@ -1132,7 +1269,7 @@
         <svg class="menu-diff-svg" viewBox="0 0 386 119" preserveAspectRatio="xMidYMid meet">
           <defs><clipPath id="cpExtreme"><rect x="0" y="42.0" width="386" height="35.0"/></clipPath></defs>
           <path clip-path="url(#cpExtreme)" fill="none" stroke="currentColor" stroke-width="8.6" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10"
-                d="M 111.58 46.30 L 94.61 46.30 L 94.61 72.70 L 111.58 72.70 M 94.61 59.50 L 109.02 59.50 M 122.58 38.99 L 138.63 80.01 M 138.63 38.99 L 122.58 80.01 M 149.23 46.30 L 171.46 46.30 M 160.35 46.30 L 160.35 77.00 M 182.26 77.00 L 182.26 46.30 L 189.57 46.30 L 189.57 46.30 L 190.36 46.34 L 191.14 46.46 L 191.90 46.66 L 192.63 46.94 L 193.33 47.29 L 193.99 47.71 L 194.59 48.20 L 195.13 48.74 L 195.61 49.34 L 196.02 49.98 L 196.35 50.66 L 196.60 51.38 L 196.77 52.11 L 196.86 52.85 L 196.86 53.61 L 196.77 54.35 L 196.60 55.08 L 196.35 55.80 L 196.02 56.48 L 195.61 57.12 L 195.13 57.72 L 194.59 58.26 L 193.99 58.75 L 193.33 59.17 L 192.63 59.52 L 191.90 59.80 L 191.14 60.00 L 190.36 60.12 L 189.57 60.16 L 182.26 60.16 M 190.30 59.50 L 197.56 80.01 M 229.94 46.30 L 212.97 46.30 L 212.97 72.70 L 229.94 72.70 M 212.97 59.50 L 227.39 59.50 M 241.74 42.00 L 241.74 77.00 M 262.62 42.00 L 262.62 77.00 M 242.77 40.28 L 252.18 66.50 L 261.59 40.28 M 295.69 46.30 L 278.73 46.30 L 278.73 72.70 L 295.69 72.70 M 278.73 59.50 L 293.14 59.50"/>
+                d="M 111.58 46.30 L 94.61 46.30 L 94.61 72.70 L 111.58 72.70 M 94.61 59.50 L 109.02 59.50 M 122.58 38.99 L 138.63 80.01 M 138.63 38.99 L 122.58 80.01 M 149.23 46.30 L 171.46 46.30 M 160.35 46.30 L 160.35 77.00 M 182.26 77.00 L 182.26 46.30 L 189.57 46.30 L 189.57 46.30 L 190.36 46.34 L 191.14 46.46 L 191.90 46.66 L 192.63 46.94 L 193.33 47.29 L 193.99 47.71 L 194.59 48.20 L 195.13 48.74 L 195.61 49.34 L 196.02 49.98 L 196.35 50.66 L 196.60 51.38 L 196.77 52.11 L 196.86 52.85 L 196.86 53.61 L 196.77 54.35 L 196.60 55.08 L 196.35 55.80 L 196.02 56.48 L 195.61 57.12 L 195.13 57.72 L 194.59 58.26 L 193.99 58.75 L 193.33 59.17 L 192.63 59.52 L 191.90 59.80 L 191.14 60.00 L 190.36 60.12 L 199.57 60.16 L 182.26 60.16 M 190.30 59.50 L 197.56 80.01 M 229.94 46.30 L 212.97 46.30 L 212.97 72.70 L 229.94 72.70 M 212.97 59.50 L 227.39 59.50 M 241.74 42.00 L 241.74 77.00 M 262.62 42.00 L 262.62 77.00 M 242.77 40.28 L 252.18 66.50 L 261.59 40.28 M 295.69 46.30 L 278.73 46.30 L 278.73 72.70 L 295.69 72.70 M 278.73 59.50 L 293.14 59.50"/>
         </svg>
       </button>
 
@@ -1156,6 +1293,11 @@
             <rect x="4" y="30.5" width="36" height="5.5" fill="currentColor"/>
           </svg>
         </button>
+
+        <button class="mode-pill-btn" id="btnInGameMode" aria-label="Switch Mode">
+          <span id="inGameModeLabel">MODE: 4SUM</span>
+        </button>
+
         <button class="icon-btn" id="btnSettings" aria-label="Settings">
           <svg viewBox="0 0 44 44">
             <path d="M 18.92 9.16 L 19.59 3.66 L 24.41 3.66 L 25.08 9.16 L 28.90 10.75 L 33.26 7.32 L 36.68 10.74 L 33.25 15.10 L 34.84 18.92 L 40.34 19.59 L 40.34 24.41 L 34.84 25.08 L 33.25 28.90 L 36.68 33.26 L 33.26 36.68 L 28.90 33.25 L 25.08 34.84 L 24.41 40.34 L 19.59 40.34 L 18.92 34.84 L 15.10 33.25 L 10.74 36.68 L 7.32 33.26 L 10.75 28.90 L 9.16 25.08 L 3.66 24.41 L 3.66 19.59 L 9.16 18.92 L 10.75 15.10 L 7.32 10.74 L 10.74 7.32 L 15.10 10.75 Z M 22.00 15.80 A 6.20 6.20 0 1 0 22.00 28.20 A 6.20 6.20 0 1 0 22.00 15.80 Z"
@@ -1166,7 +1308,7 @@
 
       <div class="stats-bar">
         <div class="stat-box">
-          <span class="stat-label">DIFF</span>
+          <span class="stat-label" id="statDiffLabel">4SUM</span>
           <span class="stat-val" id="statDiff">EASY</span>
         </div>
         <div class="stat-box">
@@ -1230,7 +1372,7 @@
     <div class="modal-overlay" id="modalStats">
       <div class="modal-card">
         <div class="modal-title">
-          <span>STATISTICS</span>
+          <span id="statsModalHeader">STATISTICS (4SUM)</span>
         </div>
         <div class="stats-tabs" id="statsTabs">
           <button class="stats-tab-btn active" data-tab="all">ALL</button>
@@ -1320,7 +1462,7 @@
             <button class="toggle-btn on" id="toggleHighlightMatch">ON</button>
           </div>
           <div class="setting-row">
-            <label>HIGHLIGHT CAGES</label>
+            <label id="labelHighlightCage">HIGHLIGHT 4SUM / CAGES</label>
             <button class="toggle-btn on" id="toggleHighlightCage">ON</button>
           </div>
           <div class="setting-row">
@@ -1359,6 +1501,7 @@
           <span>COMPLETE</span>
         </div>
         <div class="modal-body-box">
+          <div>MODE: <strong id="winMode">4SUM</strong></div>
           <div>DIFF: <strong id="winDiff">-</strong></div>
           <div>TIME: <strong id="winTime">-</strong></div>
           <div>MISTAKES: <strong id="winMistakes">-</strong></div>
@@ -1523,9 +1666,10 @@ class CentralGridEffect {
 }
 
 /* ==========================================================================
-   IN-DEPTH USER STATISTICS TRACKER
+   IN-DEPTH USER STATISTICS TRACKER (PER MODE & DIFFICULTY)
    ========================================================================== */
 const DIFFICULTIES = ['easy', 'medium', 'hard', 'extreme'];
+const MODES = ['4sum', 'killer'];
 let activeStatsTab = 'all';
 
 function createEmptyDiffStats() {
@@ -1544,21 +1688,44 @@ function createEmptyDiffStats() {
   };
 }
 
-let userStats = {
-  easy: createEmptyDiffStats(),
-  medium: createEmptyDiffStats(),
-  hard: createEmptyDiffStats(),
-  extreme: createEmptyDiffStats()
+function createEmptyModeStats() {
+  return {
+    easy: createEmptyDiffStats(),
+    medium: createEmptyDiffStats(),
+    hard: createEmptyDiffStats(),
+    extreme: createEmptyDiffStats()
+  };
+}
+
+let userStatsByMode = {
+  '4sum': createEmptyModeStats(),
+  'killer': createEmptyModeStats()
 };
 
 function loadUserStats() {
   try {
-    const raw = localStorage.getItem('killer_sudoku_user_stats');
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
-    for (const d of DIFFICULTIES) {
-      if (parsed && parsed[d]) {
-        userStats[d] = { ...createEmptyDiffStats(), ...parsed[d] };
+    const rawV2 = localStorage.getItem('sudoku_user_stats_v2');
+    if (rawV2) {
+      const parsed = JSON.parse(rawV2);
+      for (const m of MODES) {
+        if (parsed && parsed[m]) {
+          for (const d of DIFFICULTIES) {
+            if (parsed[m][d]) {
+              userStatsByMode[m][d] = { ...createEmptyDiffStats(), ...parsed[m][d] };
+            }
+          }
+        }
+      }
+      return;
+    }
+    // Backward compatibility with existing killer stats
+    const rawLegacy = localStorage.getItem('killer_sudoku_user_stats');
+    if (rawLegacy) {
+      const parsed = JSON.parse(rawLegacy);
+      for (const d of DIFFICULTIES) {
+        if (parsed && parsed[d]) {
+          userStatsByMode.killer[d] = { ...createEmptyDiffStats(), ...parsed[d] };
+        }
       }
     }
   } catch(e) {}
@@ -1566,12 +1733,13 @@ function loadUserStats() {
 
 function saveUserStats() {
   try {
-    localStorage.setItem('killer_sudoku_user_stats', JSON.stringify(userStats));
+    localStorage.setItem('sudoku_user_stats_v2', JSON.stringify(userStatsByMode));
   } catch(e) {}
 }
 
-function recordGameWin(diff, timeSec, scoreVal, mistakesCount, hintsCount) {
-  const s = userStats[diff] || createEmptyDiffStats();
+function recordGameWin(mode, diff, timeSec, scoreVal, mistakesCount, hintsCount) {
+  const modeStats = userStatsByMode[mode] || createEmptyModeStats();
+  const s = modeStats[diff] || createEmptyDiffStats();
   s.played++;
   s.won++;
   s.currentStreak++;
@@ -1582,17 +1750,20 @@ function recordGameWin(diff, timeSec, scoreVal, mistakesCount, hintsCount) {
   s.totalTimePlayed += timeSec;
   if (scoreVal > s.bestScore) s.bestScore = scoreVal;
   s.totalScore += scoreVal;
-  userStats[diff] = s;
+  modeStats[diff] = s;
+  userStatsByMode[mode] = modeStats;
   saveUserStats();
 }
 
-function recordGameLoss(diff, timeSec) {
-  const s = userStats[diff] || createEmptyDiffStats();
+function recordGameLoss(mode, diff, timeSec) {
+  const modeStats = userStatsByMode[mode] || createEmptyModeStats();
+  const s = modeStats[diff] || createEmptyDiffStats();
   s.played++;
   s.failed++;
   s.currentStreak = 0;
   s.totalTimePlayed += timeSec;
-  userStats[diff] = s;
+  modeStats[diff] = s;
+  userStatsByMode[mode] = modeStats;
   saveUserStats();
 }
 
@@ -1610,6 +1781,10 @@ function formatDuration(sec) {
 
 function renderStatsModal(tab = activeStatsTab) {
   activeStatsTab = tab;
+  const mode = gameState.mode || '4sum';
+  const modeStats = userStatsByMode[mode] || createEmptyModeStats();
+  document.getElementById('statsModalHeader').textContent = `STATISTICS (${mode.toUpperCase()})`;
+
   document.querySelectorAll('#statsTabs .stats-tab-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
@@ -1618,7 +1793,7 @@ function renderStatsModal(tab = activeStatsTab) {
   if (tab === 'all') {
     agg = createEmptyDiffStats();
     for (const d of DIFFICULTIES) {
-      const s = userStats[d];
+      const s = modeStats[d];
       agg.played += s.played;
       agg.won += s.won;
       agg.failed += s.failed;
@@ -1634,7 +1809,7 @@ function renderStatsModal(tab = activeStatsTab) {
       agg.totalScore += s.totalScore;
     }
   } else {
-    agg = userStats[tab] || createEmptyDiffStats();
+    agg = modeStats[tab] || createEmptyDiffStats();
   }
 
   const winRate = agg.played > 0 ? Math.round((agg.won / agg.played) * 100) : 0;
@@ -1731,6 +1906,7 @@ for (let r = 0; r < 9; r++) {
 }
 
 let gameState = {
+  mode: '4sum',
   difficulty: 'easy',
   solution: {},
   clues: {},
@@ -1738,6 +1914,9 @@ let gameState = {
   notes: {},
   cages: [],
   cellToCage: {},
+  dotPairs: [],
+  cellToDotPairs: {},
+  activeDotPairIds: [],
   mistakes: 0,
   hintsUsed: 0,
   score: 0,
@@ -1765,14 +1944,33 @@ const mainMenuEl = document.getElementById('mainMenu');
 const gameViewEl = document.getElementById('gameView');
 const modalConfirmNewEl = document.getElementById('modalConfirmNew');
 
+function syncModeButtonsUI() {
+  const m = gameState.mode || '4sum';
+  document.getElementById('btnMode4Sum').classList.toggle('active', m === '4sum');
+  document.getElementById('btnModeKiller').classList.toggle('active', m === 'killer');
+  document.getElementById('inGameModeLabel').textContent = `MODE: ${m.toUpperCase()}`;
+  document.getElementById('statDiffLabel').textContent = m.toUpperCase();
+  document.getElementById('labelHighlightCage').textContent = m === '4sum' ? 'HIGHLIGHT 4SUM' : 'HIGHLIGHT CAGES';
+}
+
+function setGameMode(newMode) {
+  if (newMode !== '4sum' && newMode !== 'killer') return;
+  saveToStorage();
+  gameState.mode = newMode;
+  localStorage.setItem('sudoku_last_mode', newMode);
+  syncModeButtonsUI();
+}
+
 function showMainMenu() {
   saveToStorage();
   gameState.isPaused = true;
+  syncModeButtonsUI();
   gameViewEl.classList.add('hidden');
   mainMenuEl.classList.remove('hidden');
 }
 
 function hideMainMenu() {
+  syncModeButtonsUI();
   mainMenuEl.classList.add('hidden');
   gameViewEl.classList.remove('hidden');
   gameState.isPaused = false;
@@ -1784,6 +1982,9 @@ function promptConfirmation(titleText, onYesCallback) {
   modalConfirmNewEl.classList.add('open');
 }
 
+/* ==========================================================================
+   KILLER SUDOKU GENERATOR & CAGE SVG PATH BUILDER
+   ========================================================================== */
 function getCageSvgPath(cageCells, d = 4, S = 100) {
   const cellSet = new Set(cageCells.map(([r, c]) => `${r},${c}`));
   const edges = [];
@@ -1848,7 +2049,7 @@ function getCageSvgPath(cageCells, d = 4, S = 100) {
   return pathStrs.join(' ');
 }
 
-function generateKillerPuzzle(difficulty) {
+function generateSolvedGrid() {
   const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
   function isSafe(r, c, val) {
     for (let i = 0; i < 9; i++) {
@@ -1863,7 +2064,7 @@ function generateKillerPuzzle(difficulty) {
     }
     return true;
   }
-  function solveSudoku(r = 0, c = 0) {
+  function solve(r = 0, c = 0) {
     if (r === 9) return true;
     const nr = (c === 8) ? r + 1 : r;
     const nc = (c === 8) ? 0 : c + 1;
@@ -1871,13 +2072,18 @@ function generateKillerPuzzle(difficulty) {
     for (const n of nums) {
       if (isSafe(r, c, n)) {
         grid[r][c] = n;
-        if (solveSudoku(nr, nc)) return true;
+        if (solve(nr, nc)) return true;
         grid[r][c] = 0;
       }
     }
     return false;
   }
-  solveSudoku();
+  solve();
+  return grid;
+}
+
+function generateKillerPuzzle(difficulty) {
+  const grid = generateSolvedGrid();
 
   const unassigned = new Set();
   for (let r = 0; r < 9; r++) {
@@ -1980,7 +2186,369 @@ function generateKillerPuzzle(difficulty) {
     board[k] = solution[k];
   }
 
-  return { solution, clues, board, notes, cages, cellToCage };
+  return { solution, clues, board, notes, cages, cellToCage, dotPairs: [], cellToDotPairs: {} };
+}
+
+/* ==========================================================================
+   4SUM VARIANT GENERATOR & BITMASK + EQUATION UNIQUENESS SOLVER
+   ========================================================================== */
+function segmentsIntersect(p1, p2, p3, p4) {
+  function ccw(A, B, C) {
+    return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0]);
+  }
+  function onSeg(A, B, C) {
+    return (
+      Math.min(A[0], B[0]) <= C[0] && C[0] <= Math.max(A[0], B[0]) &&
+      Math.min(A[1], B[1]) <= C[1] && C[1] <= Math.max(A[1], B[1]) &&
+      Math.abs((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0])) === 0
+    );
+  }
+  if (onSeg(p1, p2, p3) || onSeg(p1, p2, p4) || onSeg(p3, p4, p1) || onSeg(p3, p4, p2)) return true;
+  return (ccw(p1, p3, p4) !== ccw(p2, p3, p4)) && (ccw(p1, p2, p3) !== ccw(p1, p2, p4));
+}
+
+function getQuadCells(vr, vc) {
+  return [[vr, vc], [vr, vc + 1], [vr + 1, vc], [vr + 1, vc + 1]];
+}
+
+function select4SumPairsForGrid(grid, maxPairs = 16) {
+  const qs = Array.from({ length: 8 }, () => Array(8).fill(0));
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      qs[r][c] = grid[r][c] + grid[r][c + 1] + grid[r + 1][c] + grid[r + 1][c + 1];
+    }
+  }
+
+  const cands = [];
+  for (let r1 = 0; r1 < 8; r1++) {
+    for (let c1 = 0; c1 < 8; c1++) {
+      for (let r2 = 0; r2 < 8; r2++) {
+        for (let c2 = 0; c2 < 8; c2++) {
+          if ((r1 < r2 || (r1 === r2 && c1 < c2)) && qs[r1][c1] === qs[r2][c2]) {
+            const dr = Math.abs(r1 - r2);
+            const dc = Math.abs(c1 - c2);
+            // Allow horizontal/vertical grid-channel pairs (dist 1..3) and diagonal distance-1 pairs
+            if ((dr === 0 && dc >= 1 && dc <= 3) || (dc === 0 && dr >= 1 && dr <= 3) || (dr === 1 && dc === 1)) {
+              const dist = dr + dc;
+              const ptype = dist === 1 ? 'adj' : (dr === 1 && dc === 1 ? 'diag' : 'disjoint');
+              cands.push({ u: [r1, c1], v: [r2, c2], ptype, dist });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  cands.sort(() => Math.random() - 0.5);
+  cands.sort((a, b) => a.dist - b.dist);
+
+  const selected = [];
+  const usedV = new Set();
+  let pairId = 0;
+
+  for (const item of cands) {
+    const ku = `${item.u[0]},${item.u[1]}`;
+    const kv = `${item.v[0]},${item.v[1]}`;
+    if (usedV.has(ku) || usedV.has(kv)) continue;
+
+    let crosses = false;
+    for (const s of selected) {
+      if (segmentsIntersect(item.u, item.v, s.u, s.v)) {
+        crosses = true;
+        break;
+      }
+    }
+    if (!crosses) {
+      const qU = getQuadCells(item.u[0], item.u[1]);
+      const qV = getQuadCells(item.v[0], item.v[1]);
+      const setU = new Set(qU.map(([r, c]) => `${r},${c}`));
+      const setV = new Set(qV.map(([r, c]) => `${r},${c}`));
+      const lhs = qU.filter(([r, c]) => !setV.has(`${r},${c}`));
+      const rhs = qV.filter(([r, c]) => !setU.has(`${r},${c}`));
+      const allCells = [...qU, ...qV.filter(([r, c]) => !setU.has(`${r},${c}`))];
+
+      selected.push({
+        id: pairId++,
+        u: item.u,
+        v: item.v,
+        ptype: item.ptype,
+        lhs,
+        rhs,
+        cells: allCells
+      });
+      usedV.add(ku);
+      usedV.add(kv);
+      if (selected.length >= maxPairs) break;
+    }
+  }
+  return selected;
+}
+
+const POPCOUNT = new Uint8Array(1024);
+const FIRST_DIGIT = new Uint8Array(1024);
+const MIN_DIGIT = new Uint8Array(1024);
+const MAX_DIGIT = new Uint8Array(1024);
+for (let m = 1; m < 1024; m++) {
+  let cnt = 0, first = 0, mn = 99, mx = 0;
+  for (let d = 1; d <= 9; d++) {
+    if (m & (1 << d)) {
+      cnt++;
+      if (!first) first = d;
+      if (d < mn) mn = d;
+      if (d > mx) mx = d;
+    }
+  }
+  POPCOUNT[m] = cnt;
+  FIRST_DIGIT[m] = first;
+  MIN_DIGIT[m] = mn;
+  MAX_DIGIT[m] = mx;
+}
+
+const CELL_PEERS_IDX = Array.from({ length: 81 }, (_, idx) => {
+  const r = Math.floor(idx / 9), c = idx % 9;
+  const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
+  const set = new Set();
+  for (let i = 0; i < 9; i++) {
+    if (i !== c) set.add(r * 9 + i);
+    if (i !== r) set.add(i * 9 + c);
+  }
+  for (let dr = 0; dr < 3; dr++) {
+    for (let dc = 0; dc < 3; dc++) {
+      const nIdx = (br + dr) * 9 + (bc + dc);
+      if (nIdx !== idx) set.add(nIdx);
+    }
+  }
+  return Array.from(set);
+});
+
+function count4SumSolutions(dotPairs, cluesMap, maxBranches = 220) {
+  const eqs = dotPairs.map(p => ({
+    lhs: p.lhs.map(([r, c]) => r * 9 + c),
+    rhs: p.rhs.map(([r, c]) => r * 9 + c)
+  }));
+
+  const initMasks = new Uint16Array(81);
+  initMasks.fill(0x3FE);
+  for (const [k, val] of Object.entries(cluesMap)) {
+    const [r, c] = k.split(',').map(Number);
+    initMasks[r * 9 + c] = (1 << val);
+  }
+
+  let solutions = 0;
+  let branches = 0;
+
+  function propagate(masks) {
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let idx = 0; idx < 81; idx++) {
+        const m = masks[idx];
+        if (m === 0) return false;
+        if (POPCOUNT[m] === 1) {
+          const peers = CELL_PEERS_IDX[idx];
+          for (let i = 0; i < peers.length; i++) {
+            const p = peers[i];
+            if (masks[p] & m) {
+              masks[p] &= ~m;
+              if (masks[p] === 0) return false;
+              changed = true;
+            }
+          }
+        }
+      }
+      for (let e = 0; e < eqs.length; e++) {
+        const { lhs, rhs } = eqs[e];
+        let lMin = 0, lMax = 0, rMin = 0, rMax = 0;
+        for (let i = 0; i < lhs.length; i++) {
+          const m = masks[lhs[i]];
+          lMin += MIN_DIGIT[m];
+          lMax += MAX_DIGIT[m];
+        }
+        for (let i = 0; i < rhs.length; i++) {
+          const m = masks[rhs[i]];
+          rMin += MIN_DIGIT[m];
+          rMax += MAX_DIGIT[m];
+        }
+        if (lMax < rMin || rMax < lMin) return false;
+        const sMin = lMin > rMin ? lMin : rMin;
+        const sMax = lMax < rMax ? lMax : rMax;
+
+        for (let i = 0; i < lhs.length; i++) {
+          const cell = lhs[i];
+          const m = masks[cell];
+          if (POPCOUNT[m] > 1) {
+            const oMin = lMin - MIN_DIGIT[m];
+            const oMax = lMax - MAX_DIGIT[m];
+            const lo = sMin - oMax;
+            const hi = sMax - oMin;
+            if (lo > MIN_DIGIT[m] || hi < MAX_DIGIT[m]) {
+              let nm = 0;
+              for (let d = (lo > 1 ? lo : 1); d <= (hi < 9 ? hi : 9); d++) {
+                if (m & (1 << d)) nm |= (1 << d);
+              }
+              if (nm === 0) return false;
+              if (nm !== m) { masks[cell] = nm; changed = true; }
+            }
+          }
+        }
+        for (let i = 0; i < rhs.length; i++) {
+          const cell = rhs[i];
+          const m = masks[cell];
+          if (POPCOUNT[m] > 1) {
+            const oMin = rMin - MIN_DIGIT[m];
+            const oMax = rMax - MAX_DIGIT[m];
+            const lo = sMin - oMax;
+            const hi = sMax - oMin;
+            if (lo > MIN_DIGIT[m] || hi < MAX_DIGIT[m]) {
+              let nm = 0;
+              for (let d = (lo > 1 ? lo : 1); d <= (hi < 9 ? hi : 9); d++) {
+                if (m & (1 << d)) nm |= (1 << d);
+              }
+              if (nm === 0) return false;
+              if (nm !== m) { masks[cell] = nm; changed = true; }
+            }
+          }
+        }
+      }
+    }
+    return true;
+  }
+
+  function dfs(masks) {
+    if (!propagate(masks)) return;
+    let bestCell = -1, bestCnt = 10;
+    for (let i = 0; i < 81; i++) {
+      const cnt = POPCOUNT[masks[i]];
+      if (cnt > 1 && cnt < bestCnt) {
+        bestCnt = cnt;
+        bestCell = i;
+        if (cnt === 2) break;
+      }
+    }
+    if (bestCell === -1) {
+      solutions++;
+      return;
+    }
+    if (branches >= maxBranches) {
+      solutions = 2;
+      return;
+    }
+    const m = masks[bestCell];
+    for (let d = 1; d <= 9; d++) {
+      if (m & (1 << d)) {
+        branches++;
+        const nextMasks = new Uint16Array(masks);
+        nextMasks[bestCell] = (1 << d);
+        dfs(nextMasks);
+        if (solutions >= 2) return;
+      }
+    }
+  }
+
+  dfs(initMasks);
+  return { solutions, branches };
+}
+
+function generate4SumPuzzle(difficulty) {
+  let bestGrid = null;
+  let bestPairs = [];
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const g = generateSolvedGrid();
+    const p = select4SumPairsForGrid(g, 16);
+    if (p.length > bestPairs.length) {
+      bestPairs = p;
+      bestGrid = g;
+      if (p.length >= 14) break;
+    }
+  }
+
+  const solution = {};
+  const board = {};
+  const clues = {};
+  const notes = {};
+  const allKeys = [];
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const key = `${r},${c}`;
+      solution[key] = bestGrid[r][c];
+      clues[key] = bestGrid[r][c];
+      notes[key] = new Set();
+      allKeys.push(key);
+    }
+  }
+
+  allKeys.sort(() => Math.random() - 0.5);
+
+  let targetClues = 28;
+  let maxBranchCap = 0;
+  if (difficulty === 'easy') {
+    targetClues = 28;
+    maxBranchCap = 0; // Pure Layer-1 direct singles & 1-unknown 4SUM equations
+  } else if (difficulty === 'medium') {
+    targetClues = 21;
+    maxBranchCap = 60;
+  } else if (difficulty === 'hard') {
+    targetClues = 15;
+    maxBranchCap = 160;
+  } else {
+    targetClues = 10;
+    maxBranchCap = 280;
+  }
+
+  // Fast chunk removal from 81 down to 41 clues
+  let idx = 0;
+  while (idx + 8 <= 40 && Object.keys(clues).length - 8 >= targetClues) {
+    const chunk = allKeys.slice(idx, idx + 8);
+    const saved = {};
+    for (const k of chunk) { saved[k] = clues[k]; delete clues[k]; }
+    const { solutions } = count4SumSolutions(bestPairs, clues, maxBranchCap);
+    if (solutions !== 1) {
+      for (const k of chunk) clues[k] = saved[k];
+      break;
+    }
+    idx += 8;
+  }
+
+  // Fine-grained 1-by-1 clue stripping down to targetClues
+  for (let i = idx; i < allKeys.length; i++) {
+    if (Object.keys(clues).length <= targetClues) break;
+    const k = allKeys[i];
+    if (!(k in clues)) continue;
+    const val = clues[k];
+    delete clues[k];
+    const { solutions } = count4SumSolutions(bestPairs, clues, maxBranchCap);
+    if (solutions !== 1) {
+      clues[k] = val;
+    }
+  }
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const key = `${r},${c}`;
+      board[key] = clues[key] || 0;
+    }
+  }
+
+  const cellToDotPairs = {};
+  for (const pair of bestPairs) {
+    for (const [r, c] of pair.cells) {
+      const k = `${r},${c}`;
+      if (!cellToDotPairs[k]) cellToDotPairs[k] = [];
+      cellToDotPairs[k].push(pair);
+    }
+  }
+
+  return {
+    solution,
+    clues,
+    board,
+    notes,
+    cages: [],
+    cellToCage: {},
+    dotPairs: bestPairs,
+    cellToDotPairs
+  };
 }
 
 const killerGrid = document.getElementById('killerGrid');
@@ -2022,7 +2590,10 @@ function buildGridDOM() {
 
       cellEl.addEventListener('pointerdown', (e) => {
         e.preventDefault();
-        selectCell(key);
+        const rect = cellEl.getBoundingClientRect();
+        const relX = (e.clientX - rect.left) / Math.max(1, rect.width);
+        const relY = (e.clientY - rect.top) / Math.max(1, rect.height);
+        selectCell(key, relX, relY);
       });
 
       cellDoms[key] = cellEl;
@@ -2033,6 +2604,72 @@ function buildGridDOM() {
 
 function renderCagesSVG() {
   cagesSvg.innerHTML = '';
+
+  if (gameState.mode === '4sum') {
+    const pairs = gameState.dotPairs || [];
+    pairs.forEach((pair, idx) => {
+      const x1 = (pair.u[1] + 1) * 100;
+      const y1 = (pair.u[0] + 1) * 100;
+      const x2 = (pair.v[1] + 1) * 100;
+      const y2 = (pair.v[0] + 1) * 100;
+
+      const mx = (x1 + x2) / 2;
+      const my = (y1 + y2) / 2;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dist = Math.hypot(dx, dy) || 1;
+      const nx = -dy / dist;
+      const ny = dx / dist;
+
+      // Gentle 21-unit bow (0.21 cell) keeps arc off gridlines & away from cell centers
+      const sign = idx % 2 === 0 ? 1 : -1;
+      const offset = sign * 21;
+      const cx = mx + nx * offset;
+      const cy = my + ny * offset;
+      const dPath = `M ${x1} ${y1} Q ${cx.toFixed(1)} ${cy.toFixed(1)} ${x2} ${y2}`;
+
+      const gEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      gEl.setAttribute('class', `foursum-pair ${pair.ptype === 'adj' ? 'adj-pair' : 'disjoint-pair'}`);
+      gEl.setAttribute('id', `foursum-pair-${pair.id}`);
+
+      const haloPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      haloPath.setAttribute('class', 'foursum-tether-halo');
+      haloPath.setAttribute('d', dPath);
+      gEl.appendChild(haloPath);
+
+      const linePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      linePath.setAttribute('class', 'foursum-tether');
+      linePath.setAttribute('d', dPath);
+      gEl.appendChild(linePath);
+
+      for (const [px, py] of [[x1, y1], [x2, y2]]) {
+        const cHalo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        cHalo.setAttribute('class', 'foursum-dot-halo');
+        cHalo.setAttribute('cx', px);
+        cHalo.setAttribute('cy', py);
+        cHalo.setAttribute('r', '16.5');
+        gEl.appendChild(cHalo);
+
+        const cDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        cDot.setAttribute('class', 'foursum-dot');
+        cDot.setAttribute('cx', px);
+        cDot.setAttribute('cy', py);
+        cDot.setAttribute('r', '12');
+        gEl.appendChild(cDot);
+
+        const cCore = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        cCore.setAttribute('class', 'foursum-dot-core');
+        cCore.setAttribute('cx', px);
+        cCore.setAttribute('cy', py);
+        cCore.setAttribute('r', '4.6');
+        gEl.appendChild(cCore);
+      }
+
+      cagesSvg.appendChild(gEl);
+    });
+    return;
+  }
+
   for (const cage of gameState.cages) {
     const pathStr = getCageSvgPath(cage.cells, 4, 100);
     const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -2060,24 +2697,31 @@ function buildNumpadDOM() {
 }
 
 function openDifficulty(difficulty) {
-  if (loadFromStorage(difficulty)) {
+  if (loadFromStorage(difficulty, gameState.mode)) {
     document.getElementById('pauseMask').classList.remove('active');
     hideMainMenu();
     startTimer();
   } else {
-    startNewGame(difficulty);
+    startNewGame(difficulty, gameState.mode);
   }
 }
 
-function startNewGame(difficulty = 'easy') {
-  const generated = generateKillerPuzzle(difficulty);
+function startNewGame(difficulty = 'easy', mode = gameState.mode) {
+  gameState.mode = mode || '4sum';
+  const generated = (gameState.mode === '4sum')
+    ? generate4SumPuzzle(difficulty)
+    : generateKillerPuzzle(difficulty);
+
   gameState.difficulty = difficulty;
   gameState.solution = generated.solution;
   gameState.clues = generated.clues;
   gameState.board = generated.board;
   gameState.notes = generated.notes;
-  gameState.cages = generated.cages;
-  gameState.cellToCage = generated.cellToCage;
+  gameState.cages = generated.cages || [];
+  gameState.cellToCage = generated.cellToCage || {};
+  gameState.dotPairs = generated.dotPairs || [];
+  gameState.cellToDotPairs = generated.cellToDotPairs || {};
+  gameState.activeDotPairIds = [];
   gameState.mistakes = 0;
   gameState.hintsUsed = 0;
   gameState.score = 0;
@@ -2088,6 +2732,7 @@ function startNewGame(difficulty = 'easy') {
   gameState.won = false;
   gameState.selectedCell = null;
 
+  syncModeButtonsUI();
   document.getElementById('statDiff').textContent = difficulty.toUpperCase();
   document.getElementById('pauseMask').classList.remove('active');
 
@@ -2100,10 +2745,35 @@ function startNewGame(difficulty = 'easy') {
   saveToStorage();
 }
 
-function selectCell(key) {
+function selectCell(key, relX = 0.5, relY = 0.5) {
   if (gameState.isPaused || gameState.gameOver || gameState.won) return;
   sfx.init();
   gameState.selectedCell = key;
+
+  if (gameState.mode === '4sum') {
+    const pairs = gameState.cellToDotPairs[key] || [];
+    if (pairs.length <= 1) {
+      gameState.activeDotPairIds = pairs.map(p => p.id);
+    } else {
+      // Pick the dot pair whose vertex is closest to the tapped corner of the cell
+      const [r, c] = key.split(',').map(Number);
+      const tapGridX = c + relX;
+      const tapGridY = r + relY;
+      let bestPair = pairs[0];
+      let bestDist = 999;
+      for (const p of pairs) {
+        for (const [vr, vc] of [p.u, p.v]) {
+          const d = Math.hypot((vc + 1) - tapGridX, (vr + 1) - tapGridY);
+          if (d < bestDist) {
+            bestDist = d;
+            bestPair = p;
+          }
+        }
+      }
+      gameState.activeDotPairIds = [bestPair.id];
+    }
+  }
+
   sfx.click();
   renderHighlights();
 }
@@ -2169,10 +2839,12 @@ function handleNumberInput(digit) {
     sfx.click();
 
     if (gameState.settings.autoRemoveNotes && isCorrect) {
-      const cage = gameState.cellToCage[key];
       const allPeers = new Set(PEER_MAP[key]);
-      if (cage) {
-        for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+      if (gameState.mode === 'killer') {
+        const cage = gameState.cellToCage[key];
+        if (cage) {
+          for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+        }
       }
       allPeers.delete(key);
 
@@ -2252,10 +2924,12 @@ function giveHint() {
 
   const affectedNotes = [];
   if (gameState.settings.autoRemoveNotes) {
-    const cage = gameState.cellToCage[targetKey];
     const allPeers = new Set(PEER_MAP[targetKey]);
-    if (cage) {
-      for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+    if (gameState.mode === 'killer') {
+      const cage = gameState.cellToCage[targetKey];
+      if (cage) {
+        for (const [cr, cc] of cage.cells) allPeers.add(`${cr},${cc}`);
+      }
     }
     allPeers.delete(targetKey);
 
@@ -2339,9 +3013,13 @@ function renderCell(key) {
   const sumSpan = el.querySelector('.cage-sum');
   const notesGrid = el.querySelector('.notes-grid');
 
-  const cage = gameState.cellToCage[key];
-  if (cage && cage.rootCell[0] === r && cage.rootCell[1] === c) {
-    sumSpan.textContent = cage.sum;
+  if (gameState.mode === 'killer') {
+    const cage = gameState.cellToCage[key];
+    if (cage && cage.rootCell[0] === r && cage.rootCell[1] === c) {
+      sumSpan.textContent = cage.sum;
+    } else {
+      sumSpan.textContent = '';
+    }
   } else {
     sumSpan.textContent = '';
   }
@@ -2374,13 +3052,38 @@ function renderHighlights() {
   const selVal = selKey ? gameState.board[selKey] : 0;
   const peerList = selKey ? PEER_MAP[selKey] : null;
   const peerSet = peerList ? new Set(peerList) : null;
-  const selCage = selKey ? gameState.cellToCage[selKey] : null;
-  const cageCellSet = (selCage && gameState.settings.highlightCage) ? new Set(selCage.cells.map(([r, c]) => `${r},${c}`)) : null;
 
-  document.querySelectorAll('.cage-path').forEach(p => p.classList.remove('active-cage'));
-  if (selCage) {
-    const activePath = document.getElementById(`cage-path-${selCage.id}`);
-    if (activePath) activePath.classList.add('active-cage');
+  let cageCellSet = null;
+
+  if (gameState.mode === '4sum') {
+    document.querySelectorAll('.foursum-pair').forEach(g => g.classList.remove('active-pair'));
+    if (selKey && gameState.settings.highlightCage) {
+      const pairs = gameState.cellToDotPairs[selKey] || [];
+      const activeIds = new Set(gameState.activeDotPairIds && gameState.activeDotPairIds.length > 0
+        ? gameState.activeDotPairIds
+        : pairs.map(p => p.id));
+      cageCellSet = new Set();
+      for (const p of pairs) {
+        if (activeIds.has(p.id)) {
+          const gEl = document.getElementById(`foursum-pair-${p.id}`);
+          if (gEl) gEl.classList.add('active-pair');
+          for (const [cr, cc] of p.cells) {
+            cageCellSet.add(`${cr},${cc}`);
+          }
+        }
+      }
+    }
+  } else {
+    const selCage = selKey ? gameState.cellToCage[selKey] : null;
+    cageCellSet = (selCage && gameState.settings.highlightCage)
+      ? new Set(selCage.cells.map(([r, c]) => `${r},${c}`))
+      : null;
+
+    document.querySelectorAll('.cage-path').forEach(p => p.classList.remove('active-cage'));
+    if (selCage) {
+      const activePath = document.getElementById(`cage-path-${selCage.id}`);
+      if (activePath) activePath.classList.add('active-cage');
+    }
   }
 
   for (let r = 0; r < 9; r++) {
@@ -2459,6 +3162,10 @@ function togglePause() {
   sfx.click();
 }
 
+function getSaveStorageKey(mode, difficulty) {
+  return `sudoku_save_${mode}_${difficulty}`;
+}
+
 function checkWinCondition() {
   for (let r = 0; r < 9; r++) {
     for (let c = 0; c < 9; c++) {
@@ -2469,14 +3176,18 @@ function checkWinCondition() {
 
   gameState.won = true;
   clearInterval(timerInterval);
-  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
-  recordGameWin(gameState.difficulty, gameState.timerSeconds, gameState.score, gameState.mistakes, gameState.hintsUsed);
+  localStorage.removeItem(getSaveStorageKey(gameState.mode, gameState.difficulty));
+  if (gameState.mode === 'killer') {
+    localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  }
+  recordGameWin(gameState.mode, gameState.difficulty, gameState.timerSeconds, gameState.score, gameState.mistakes, gameState.hintsUsed);
 
   sfx.victory();
   fireConfetti();
 
   const m = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
   const s = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('winMode').textContent = gameState.mode.toUpperCase();
   document.getElementById('winDiff').textContent = gameState.difficulty.toUpperCase();
   document.getElementById('winTime').textContent = `${m}:${s}`;
   document.getElementById('winMistakes').textContent = `${gameState.mistakes}/3`;
@@ -2489,8 +3200,11 @@ function checkWinCondition() {
 function triggerGameOver() {
   gameState.gameOver = true;
   clearInterval(timerInterval);
-  localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
-  recordGameLoss(gameState.difficulty, gameState.timerSeconds);
+  localStorage.removeItem(getSaveStorageKey(gameState.mode, gameState.difficulty));
+  if (gameState.mode === 'killer') {
+    localStorage.removeItem(`killer_sudoku_save_${gameState.difficulty}`);
+  }
+  recordGameLoss(gameState.mode, gameState.difficulty, gameState.timerSeconds);
   sfx.error();
   document.getElementById('modalGameOver').classList.add('open');
 }
@@ -2591,6 +3305,30 @@ function toggleNotes() {
   document.getElementById('btnNotes').classList.toggle('active', gameState.isNotesMode);
 }
 
+/* Main Menu Mode Selector Handlers */
+document.getElementById('btnMode4Sum').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  setGameMode('4sum');
+});
+
+document.getElementById('btnModeKiller').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  setGameMode('killer');
+});
+
+/* In-Game Mode Pill Handler -> Switches between 4SUM and KILLER */
+document.getElementById('btnInGameMode').addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  sfx.click();
+  const nextMode = gameState.mode === '4sum' ? 'killer' : '4sum';
+  promptConfirmation(`SWITCH TO ${nextMode.toUpperCase()}?`, () => {
+    setGameMode(nextMode);
+    openDifficulty(gameState.difficulty);
+  });
+});
+
 document.getElementById('btnNotes').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   toggleNotes();
@@ -2664,12 +3402,7 @@ document.getElementById('btnResetStats').addEventListener('pointerdown', (e) => 
   e.preventDefault();
   sfx.click();
   promptConfirmation('RESET STATS?', () => {
-    userStats = {
-      easy: createEmptyDiffStats(),
-      medium: createEmptyDiffStats(),
-      hard: createEmptyDiffStats(),
-      extreme: createEmptyDiffStats()
-    };
+    userStatsByMode[gameState.mode] = createEmptyModeStats();
     saveUserStats();
     renderStatsModal(activeStatsTab);
   });
@@ -2681,7 +3414,7 @@ document.getElementById('btnInGameNew').addEventListener('pointerdown', (e) => {
   sfx.click();
   const targetDiff = gameState.difficulty;
   promptConfirmation('NEW GAME?', () => {
-    startNewGame(targetDiff);
+    startNewGame(targetDiff, gameState.mode);
   });
 });
 
@@ -2693,7 +3426,7 @@ document.querySelectorAll('.node-new-pick').forEach(nodeBtn => {
     sfx.click();
     const targetDiff = nodeBtn.dataset.diff;
     promptConfirmation('NEW GAME?', () => {
-      startNewGame(targetDiff);
+      startNewGame(targetDiff, gameState.mode);
     });
   });
 });
@@ -2739,7 +3472,7 @@ document.getElementById('btnFailNew').addEventListener('pointerdown', (e) => {
   e.preventDefault();
   sfx.click();
   document.getElementById('modalGameOver').classList.remove('open');
-  startNewGame(gameState.difficulty);
+  startNewGame(gameState.difficulty, gameState.mode);
 });
 
 document.getElementById('btnRestart').addEventListener('pointerdown', (e) => {
@@ -2812,13 +3545,16 @@ function loadSettingsFromStorage() {
 function saveToStorage() {
   if (!gameState.difficulty || gameState.won || gameState.gameOver || Object.keys(gameState.solution).length === 0) return;
   try {
+    const mode = gameState.mode || '4sum';
     const data = {
+      mode,
       difficulty: gameState.difficulty,
       solution: gameState.solution,
       clues: gameState.clues,
       board: gameState.board,
       notes: {},
-      cages: gameState.cages,
+      cages: gameState.cages || [],
+      dotPairs: gameState.dotPairs || [],
       mistakes: gameState.mistakes,
       hintsUsed: gameState.hintsUsed || 0,
       score: gameState.score,
@@ -2833,23 +3569,33 @@ function saveToStorage() {
     for (const k in gameState.notes) {
       data.notes[k] = Array.from(gameState.notes[k]);
     }
-    localStorage.setItem(`killer_sudoku_save_${gameState.difficulty}`, JSON.stringify(data));
+    localStorage.setItem(getSaveStorageKey(mode, gameState.difficulty), JSON.stringify(data));
+    localStorage.setItem('sudoku_last_mode', mode);
     localStorage.setItem('killer_sudoku_last_diff', gameState.difficulty);
   } catch(e) {}
 }
 
-function loadFromStorage(difficulty) {
+function loadFromStorage(difficulty, mode = gameState.mode) {
   try {
-    const raw = localStorage.getItem(`killer_sudoku_save_${difficulty}`);
+    const targetMode = mode || '4sum';
+    let raw = localStorage.getItem(getSaveStorageKey(targetMode, difficulty));
+    if (!raw && targetMode === 'killer') {
+      raw = localStorage.getItem(`killer_sudoku_save_${difficulty}`);
+    }
     if (!raw) return false;
     const data = JSON.parse(raw);
-    if (!data || !data.solution || !data.cages) return false;
+    if (!data || !data.solution) return false;
+    if (targetMode === 'killer' && (!data.cages || data.cages.length === 0)) return false;
+    if (targetMode === '4sum' && (!data.dotPairs || data.dotPairs.length === 0)) return false;
 
+    gameState.mode = targetMode;
     gameState.difficulty = difficulty;
     gameState.solution = data.solution;
     gameState.clues = data.clues || {};
     gameState.board = data.board || {};
-    gameState.cages = data.cages;
+    gameState.cages = data.cages || [];
+    gameState.dotPairs = data.dotPairs || [];
+    gameState.activeDotPairIds = [];
     gameState.notes = {};
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
@@ -2861,6 +3607,14 @@ function loadFromStorage(difficulty) {
     for (const cage of gameState.cages) {
       for (const [r, c] of cage.cells) {
         gameState.cellToCage[`${r},${c}`] = cage;
+      }
+    }
+    gameState.cellToDotPairs = {};
+    for (const pair of gameState.dotPairs) {
+      for (const [r, c] of pair.cells) {
+        const k = `${r},${c}`;
+        if (!gameState.cellToDotPairs[k]) gameState.cellToDotPairs[k] = [];
+        gameState.cellToDotPairs[k].push(pair);
       }
     }
     gameState.mistakes = data.mistakes || 0;
@@ -2877,6 +3631,7 @@ function loadFromStorage(difficulty) {
     gameState.won = false;
     gameState.selectedCell = null;
 
+    syncModeButtonsUI();
     document.getElementById('statDiff').textContent = gameState.difficulty.toUpperCase();
     renderCagesSVG();
     renderBoard();
@@ -2894,9 +3649,13 @@ loadSettingsFromStorage();
 loadUserStats();
 new CentralGridEffect(document.getElementById('centralGridCanvas'));
 
+const initialMode = localStorage.getItem('sudoku_last_mode') || '4sum';
 const initialDiff = localStorage.getItem('killer_sudoku_last_diff') || 'easy';
-if (!loadFromStorage(initialDiff)) {
-  startNewGame(initialDiff);
+gameState.mode = initialMode;
+syncModeButtonsUI();
+
+if (!loadFromStorage(initialDiff, initialMode)) {
+  startNewGame(initialDiff, initialMode);
 }
 showMainMenu();
 </script>
